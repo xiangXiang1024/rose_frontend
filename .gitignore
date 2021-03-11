@@ -1,0 +1,10 @@
+/cmake-build-debug/
+/output/
+.idea/.gitignore
+.idea/.name
+.idea/codeStyles/
+.idea/misc.xml
+.idea/modules.xml
+.idea/rose frontend.iml
+.idea/vcs.xml
+.idea/xiang_data_analyze.iml
