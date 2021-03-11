@@ -2,7 +2,7 @@
 
 ## 前置条件
 - 系统：Ubuntu 18
-- 安装Rose Compiler：http://rosecompiler.org/
+- 安装Rose Compiler：<http://rosecompiler.org/>
 - 安装Boost库
 - 安装cmake
 
