@@ -10,8 +10,8 @@
 
 class LoopSegment : public CodeSegment{
 public:
-    CodeSegment initializer;
-    vector<CodeSegment> loop_segment_list;
+    CodeSegment* initializer;
+    vector<CodeSegment*> loop_segment_list;
 
     LoopSegment() {}
 
@@ -68,16 +68,21 @@ public:
 
 
     void analyze() {
-        cout << "TODO analyze loop segment" << endl;
+//        cout << "analyze loop segment" << endl;
         SgStatement* statement = statement_list.front();
+//        cout << "statement: " << statement -> unparseToString() << "\t|\t" << statement -> class_name() << endl;
         if(dynamic_cast<SgForStatement*>(statement) != nullptr) {
             handle_for_statement(dynamic_cast<SgForStatement*>(statement));
         }
 
+//        cout << "loop_segment_list size: " << loop_segment_list.size() << endl;
+
         for (auto it = loop_segment_list.end()-1; it >= loop_segment_list.begin(); it--) {
-            CodeSegment segment = *it;
-            segment.analyze();
-            (*it).intermediate_list = segment.intermediate_list;
+            CodeSegment* segment = *it;
+//            cout << "in loop to analyze segment: " << endl;
+//            segment -> print();
+            segment -> analyze();
+            (*it) -> intermediate_list = segment -> intermediate_list;
         }
 
         /*cout << "loop body after analyze: " << endl;
@@ -86,7 +91,29 @@ public:
         }*/
     }
 
-    void print();
+    void print() {
+        cout << "====" << get_condition_str() << "==== loop" << endl;
+//    cout << "loop_segment_list.size: loop_segment_list.size: " << loop_segment_list.size() << endl;
+        for(SgStatement* s : statement_list) {
+            cout << s -> unparseToString() << endl;
+        }
+
+        cout << "initializer: " << endl;
+        if(initializer == nullptr) {
+            cout << "initializer == nullptr" << endl;
+        }else {
+            initializer -> print();
+        }
+
+        if(loop_segment_list.size() > 0) {
+            for(CodeSegment* c : loop_segment_list) {
+                c -> print();
+            }
+            return;
+        }/*else {
+            cout << "loop_segment_list.size() == 0" << endl;
+        }*/
+    }
 
     void handle_for_statement(SgForStatement* statement);
 
@@ -94,8 +121,8 @@ public:
         string blank = common::get_line_start_blank(tab_num);
         stringstream ir_stream;
         ir_stream << blank << "TODO: loop ir content" << endl;
-        for(CodeSegment c : loop_segment_list) {
-            ir_stream << c.get_ir_content(tab_num+1) << endl;
+        for(CodeSegment* c : loop_segment_list) {
+            ir_stream << c -> get_ir_content(tab_num+1) << endl;
         }
         return ir_stream.str();
     }

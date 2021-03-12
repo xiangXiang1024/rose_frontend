@@ -73,13 +73,55 @@ public:
 
     void add_condition(Condition condition);
 
-    virtual void print();
+    virtual void print() {
+        cout << "====" << get_condition_str() << "====" << endl;
+        cout << "statement: " << endl;
+        for(SgStatement* s : statement_list) {
+            cout << s -> unparseToString() << endl;
+        }
+
+        cout << "input_list: " << endl;
+        for(Variable v : input_list) {
+            v.print();
+        }
+        cout << "intermediate_list: " << endl;
+        for(Variable v : intermediate_list) {
+            v.print();
+        }
+        cout << "output_list: " << endl;
+        for(Variable v : output_list) {
+            v.print();
+        }
+        if(is_break) {
+            cout << "is break path" << endl;
+        }
+        if(is_continue) {
+            cout << "is continue path" << endl;
+        }
+        cout << "========" << endl;
+
+        if(segment_list.size() > 0) {
+            cout << "segment list: " << endl;
+            for(CodeSegment* c : segment_list) {
+                c -> print();
+            }
+            return;
+        }/*else {
+            cout << "segment_list.size() == 0" << endl;
+        }*/
+
+        if(other_execute_path_list.size() > 0) {
+            for(CodeSegment* c : other_execute_path_list) {
+                c -> print();
+            }
+        }
+    }
 
     void analyze() {
         if(statement_list.size() == 0) {
             return;
         }
-        /*cout << "TODO analyze code segment" << endl;
+        /*cout << "analyze code segment" << endl;
         cout << "condition: " << get_condition_str() << endl;
         cout << "code:" << endl;
         for(SgStatement* s : statement_list) {
@@ -117,7 +159,14 @@ public:
                 add_input(segment -> input_list);
             }
         }
-        // TODO calculate input
+
+        for(Variable v : output_list) {
+            Variable tmp = get_intermediate_variable(v.variable_name);
+            if(tmp.get_expression() != nullptr) {
+                add_output(tmp);
+            }
+        }
+
         calculate_input();
 //        print();
     };

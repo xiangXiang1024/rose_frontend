@@ -50,8 +50,10 @@ public:
 //        v.print();
 
         bool has_variable = false;
-        for(Variable output : output_list) {
+        for(int i = 0 ; i < output_list.size() ; i++) {
+            Variable output = output_list.at(i);
             if(v.variable_name == output.variable_name) {
+                output_list.at(i).set_expression(v.get_expression());
                 return;
             }
         }

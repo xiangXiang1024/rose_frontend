@@ -43,7 +43,11 @@ public:
 
     void set_expression(SgExpression* exp) {
         expression = exp;
-        expression_str = exp -> unparseToString();
+        if(exp != nullptr) {
+            expression_str = exp -> unparseToString();
+        }else {
+            expression_str = "";
+        }
     }
 
     void set_init_expression(SgExpression* exp) {

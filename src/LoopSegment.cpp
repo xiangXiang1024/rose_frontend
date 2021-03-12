@@ -24,7 +24,7 @@ void LoopSegment::handle_for_statement(SgForStatement* statement) {
                 statement_list.push_back(dynamic_cast<SgStatement*>(n));
             }
         }
-        initializer = CodeSegment(statement_list);
+        initializer = new CodeSegment(statement_list, condition_list, input_list, output_list, intermediate_list, 0);
     }
     /*if(test_statement == nullptr) {
         cout << "test_statement == nullptr" << endl;
@@ -42,20 +42,20 @@ void LoopSegment::handle_for_statement(SgForStatement* statement) {
         cout << "loop_body: " << loop_body -> unparseToString() << endl;
     }*/
 
-    initializer.analyze();
+    initializer -> analyze();
 //    cout << "after analyze initializer: " << endl;
 //    initializer.print();
 
     if(test_statement != nullptr) {
 //        cout << "test_statement -> class_name(): " << test_statement -> class_name() << "\t|\t" << test_statement -> unparseToString() << endl;
         vector<SgStatement*> _statement_list;
-        CodeSegment test_segment(_statement_list, condition_list, input_list, output_list, intermediate_list, 0);
+        CodeSegment* test_segment = new CodeSegment(_statement_list, condition_list, input_list, output_list, intermediate_list, 0);
         Condition test_break_condition(dynamic_cast<SgExprStatement*>(test_statement) -> get_expression(), true);
-        test_segment.add_condition(test_break_condition);
-        test_segment.is_break = true;
+        test_segment -> add_condition(test_break_condition);
+        test_segment -> is_break = true;
         loop_segment_list.push_back(test_segment);
-        cout << "test_segment: " << endl;
-        test_segment.print();
+//        cout << "test_segment: " << endl;
+//        test_segment.print();
     }
 
     vector<SgStatement*> body_statement_list;
@@ -75,23 +75,24 @@ void LoopSegment::handle_for_statement(SgForStatement* statement) {
         body_statement_list.push_back(expr_statement);
     }
 
-    CodeSegment body(body_statement_list, condition_list, input_list, output_list, intermediate_list, 0);
+    CodeSegment* body = new CodeSegment(body_statement_list, condition_list, input_list, output_list, intermediate_list, 0);
     if(test_statement != nullptr) {
         Condition test_pass_condition(dynamic_cast<SgExprStatement*>(test_statement) -> get_expression());
-        body.add_condition(test_pass_condition);
+        body -> add_condition(test_pass_condition);
     }
 
     loop_segment_list.push_back(body);
 
     /*cout << "test body segment: " << endl;
-    for(SgStatement* s : body.statement_list) {
+    for(SgStatement* s : body -> statement_list) {
         cout << s -> unparseToString() << endl;
     }
     cout << endl;*/
 }
 
+/*
 void LoopSegment::print() {
-    cout << "====" << get_condition_str() << "====" << endl;
+    cout << "====" << get_condition_str() << "==== loop" << endl;
 //    cout << "loop_segment_list.size: loop_segment_list.size: " << loop_segment_list.size() << endl;
     for(SgStatement* s : statement_list) {
         cout << s -> unparseToString() << endl;
@@ -109,3 +110,4 @@ void LoopSegment::print() {
         return;
     }
 }
+*/
