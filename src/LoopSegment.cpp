@@ -54,6 +54,8 @@ void LoopSegment::handle_for_statement(SgForStatement* statement) {
         test_segment.add_condition(test_break_condition);
         test_segment.is_break = true;
         loop_segment_list.push_back(test_segment);
+        cout << "test_segment: " << endl;
+        test_segment.print();
     }
 
     vector<SgStatement*> body_statement_list;
@@ -90,6 +92,7 @@ void LoopSegment::handle_for_statement(SgForStatement* statement) {
 
 void LoopSegment::print() {
     cout << "====" << get_condition_str() << "====" << endl;
+//    cout << "loop_segment_list.size: loop_segment_list.size: " << loop_segment_list.size() << endl;
     for(SgStatement* s : statement_list) {
         cout << s -> unparseToString() << endl;
     }

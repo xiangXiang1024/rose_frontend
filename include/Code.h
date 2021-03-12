@@ -39,6 +39,12 @@ public:
         }
     }
 
+    void add_input(vector<Variable> variable_list) {
+        for(Variable v : variable_list) {
+            add_input(v);
+        }
+    }
+
     void add_output(Variable v) {
 //        cout << "add_output: " << endl;
 //        v.print();
@@ -54,6 +60,12 @@ public:
         /*if(!has_variable) {
             output_list.push_back(v);
         }*/
+    }
+
+    void add_output(vector<Variable> variable_list) {
+        for(Variable v : variable_list) {
+            add_output(v);
+        }
     }
 
     void add_intermediate(Variable v) {
@@ -72,6 +84,12 @@ public:
             intermediate_variable.print();
         }
         cout << endl;*/
+    }
+
+    void add_intermediate(vector<Variable> variable_list) {
+        for(Variable v : variable_list) {
+            add_intermediate(v);
+        }
     }
 
     void set_intermediate_variable(Variable v) {

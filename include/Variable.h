@@ -28,6 +28,13 @@ public:
 
     Variable() {}
 
+    Variable(SgPntrArrRefExp* array_ref) {
+//        SgInitializedName* initialize_name = var_ref -> get_symbol() -> get_declaration();
+        variable_name = array_ref -> unparseToString();
+        type = array_ref -> get_type();
+//        type = initialize_name -> get_type();
+    }
+
     Variable(SgVarRefExp* var_ref) {
         SgInitializedName* initialize_name = var_ref -> get_symbol() -> get_declaration();
         variable_name = initialize_name -> get_name().getString();

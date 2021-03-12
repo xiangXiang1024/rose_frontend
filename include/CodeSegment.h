@@ -95,17 +95,30 @@ public:
 
         if(do_partition) {
             // TODO
-            for(CodeSegment* segment : segment_list) {
+            for (auto it = segment_list.end()-1; it >= segment_list.begin(); it--) {
+                CodeSegment* segment = *it;
                 segment -> analyze();
+                add_output(segment -> output_list);
+                add_input(segment -> input_list);
+                if(it != segment_list.begin()) {
+                    CodeSegment* next_segment = *(it-1);
+                    next_segment -> add_output(segment -> input_list);
+                }
             }
-            // TODO generate info
         }else {
-//            get_execute_path();
             for( ; current_ptr < statement_list.size() ; current_ptr++) {
                 SgStatement* statement = statement_list.at(current_ptr);
                 handle_statement(statement);
             }
+
+            for(CodeSegment* segment : other_execute_path_list) {
+                segment -> analyze();
+                add_output(segment -> output_list);
+                add_input(segment -> input_list);
+            }
         }
+        // TODO calculate input
+        calculate_input();
 //        print();
     };
 
@@ -147,12 +160,16 @@ public:
         return ir_stream.str();
     }
 
+    void calculate_input();
+
 private:
     SgExpression* handle_binary_op(SgBinaryOp* binary_op);
 
     SgFunctionCallExp* has_func_call(SgNode* statement);
 
     vector<Variable> get_ref_variable_list(SgExpression* expression);
+
+    vector<SgExpression*> get_var_ref(SgExpression* expression);
 };
 
 

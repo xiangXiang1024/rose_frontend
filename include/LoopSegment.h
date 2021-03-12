@@ -68,16 +68,16 @@ public:
 
 
     void analyze() {
-//        cout << "TODO analyze loop segment" << endl;
+        cout << "TODO analyze loop segment" << endl;
         SgStatement* statement = statement_list.front();
         if(dynamic_cast<SgForStatement*>(statement) != nullptr) {
             handle_for_statement(dynamic_cast<SgForStatement*>(statement));
         }
 
-        for(int i = 0 ; i < loop_segment_list.size() ; i++) {
-            CodeSegment segment = loop_segment_list.at(i);
+        for (auto it = loop_segment_list.end()-1; it >= loop_segment_list.begin(); it--) {
+            CodeSegment segment = *it;
             segment.analyze();
-            loop_segment_list.at(i).intermediate_list = segment.intermediate_list;
+            (*it).intermediate_list = segment.intermediate_list;
         }
 
         /*cout << "loop body after analyze: " << endl;

@@ -18,6 +18,7 @@ int main(int argc, char **argv) {
     string ir_file_path = argv[argc-1];
 
     analyze(2, argv, ir_file_path);
+
     return 0;
 }
 
