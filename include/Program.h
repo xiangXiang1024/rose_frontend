@@ -21,7 +21,7 @@ public:
     SgGlobal *global;
 
     void analyze() {
-        cout << "analyze cpp source file: " <<  file_path << endl;
+        cout << "analyze cpp source file: " <<  file_path << endl << endl;
 
         vector<SgNode*> sgnode_list = global -> get_traversalSuccessorContainer();
         for(auto sgnode : sgnode_list) {

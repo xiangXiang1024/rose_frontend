@@ -60,7 +60,7 @@ public:
         return expression;
     }
 
-    void print() {
+    virtual void print() {
         cout << variable_name << "\t\t(" << type -> unparseToString() << ")\t\t" << expression_str << endl;
     }
 

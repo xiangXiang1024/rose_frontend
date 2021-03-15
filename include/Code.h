@@ -10,7 +10,7 @@
 #include <string>
 #include "rose.h"
 #include <vector>
-#include "Variable.h"
+#include "ArrayVariable.h"
 #include <sstream>
 #include "Common.h"
 

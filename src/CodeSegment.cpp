@@ -2,7 +2,6 @@
 // Created by root on 2021/3/9.
 //
 
-#include <VariableStateTransfer.h>
 #include <LoopSegment.h>
 #include "CodeSegment.h"
 
@@ -162,8 +161,10 @@ void CodeSegment::handle_expr_statement(SgExprStatement* statement) {
                 v.set_expression(handle_expression(expression));
                 set_intermediate_variable(v);
             }else {
+                // TODO
 //                cout << "var_node: " << var_node -> unparseToString() << "\t|\t" << var_node -> class_name() << endl;
                 if(dynamic_cast<SgPntrArrRefExp*>(var_node) != nullptr) {
+                    cout << "TODO meet array: " << var_node -> unparseToString() << "\t|\t" << var_node -> class_name() << endl;
                     SgPntrArrRefExp* arr_ref = dynamic_cast<SgPntrArrRefExp*>(var_node);
                     /*for(SgNode* n : arr_ref -> get_traversalSuccessorContainer()) {
                         cout << n -> unparseToString() << "\t|\t" << n -> class_name() << endl;
@@ -175,11 +176,16 @@ void CodeSegment::handle_expr_statement(SgExprStatement* statement) {
                         }
                     }
                     cout << "----------" << endl;*/
-                    Variable v(arr_ref);
+
+                    cout << "TODO generate array variable: " << endl;
+                    ArrayVariable array_variable(arr_ref);
+                    array_variable.print();
+
+//                    Variable v(arr_ref);
                     SgNode* expression_node = assign_op -> get_traversalSuccessorContainer().back();
                     SgExpression* expression = dynamic_cast<SgExpression*>(expression_node);
-                    v.set_expression(handle_expression(expression));
-                    set_intermediate_variable(v);
+                    array_variable.set_expression(handle_expression(expression));
+                    set_intermediate_variable(array_variable);
                 }
             }
         }else if(dynamic_cast<SgUnaryOp*>(n) != nullptr) {// TODO
