@@ -13,7 +13,7 @@ bool CodeSegment::partition() {
     for( ; current_ptr < statement_list.size() ; current_ptr++) {
         SgStatement* statement = statement_list.at(current_ptr);
 //        cout << "in partition(): statement: " << statement -> unparseToString() << "\t|\t" << statement -> class_name() << endl;
-        if(dynamic_cast<SgForStatement*>(statement) != nullptr) {
+        if(dynamic_cast<SgForStatement*>(statement) != nullptr||dynamic_cast<SgWhileStmt*>(statement) != nullptr||dynamic_cast<SgDoWhileStmt*>(statement) != nullptr) {
 //            cout << "meet for partition" << endl;
 //            cout << "current_ptr: " << current_ptr << endl;
 //            cout << "condition: " << get_condition_str() << endl;

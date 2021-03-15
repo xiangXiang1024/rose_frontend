@@ -10,7 +10,7 @@
 
 class LoopSegment : public CodeSegment{
 public:
-    CodeSegment* initializer;
+    CodeSegment* initializer = nullptr;
     vector<CodeSegment*> loop_segment_list;
 
     LoopSegment() {}
@@ -75,6 +75,14 @@ public:
             handle_for_statement(dynamic_cast<SgForStatement*>(statement));
         }
 
+        if(dynamic_cast<SgWhileStmt*>(statement) != nullptr) {
+            handle_while_statment(dynamic_cast<SgWhileStmt*>(statement));
+        }
+
+        if(dynamic_cast<SgDoWhileStmt*>(statement) != nullptr) {
+            handle_do_while_statement(dynamic_cast<SgDoWhileStmt*>(statement));
+        }
+
 //        cout << "loop_segment_list size: " << loop_segment_list.size() << endl;
 
         for (auto it = loop_segment_list.end()-1; it >= loop_segment_list.begin(); it--) {
@@ -116,6 +124,10 @@ public:
     }
 
     void handle_for_statement(SgForStatement* statement);
+
+    void handle_while_statment(SgWhileStmt* statement);
+
+    void handle_do_while_statement(SgDoWhileStmt* statement);
 
     string get_ir_content(int tab_num) {
         string blank = common::get_line_start_blank(tab_num);
