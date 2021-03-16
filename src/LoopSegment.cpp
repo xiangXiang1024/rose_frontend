@@ -143,15 +143,6 @@ void LoopSegment::handle_do_while_statement(SgDoWhileStmt* statement){
     SgStatement* test_statement = statement->get_condition();
     SgStatement* loop_body = statement->get_body();
 
-    if(test_statement != nullptr) {
-          vector<SgStatement*> _statement_list;
-          CodeSegment* test_segment = new CodeSegment(_statement_list, condition_list, input_list, output_list, intermediate_list, 0);
-          Condition test_break_condition(dynamic_cast<SgExprStatement*>(test_statement) -> get_expression(), true);
-          test_segment -> add_condition(test_break_condition);
-          test_segment -> is_break = true;
-          loop_segment_list.push_back(test_segment);
-    }
-
     vector<SgStatement*> body_statement_list;
     SgStatementPtrList &stmt_list = dynamic_cast<SgBasicBlock*>(loop_body) -> get_statements();
     for (auto s : stmt_list) {
@@ -159,10 +150,15 @@ void LoopSegment::handle_do_while_statement(SgDoWhileStmt* statement){
     }
 
     CodeSegment* body = new CodeSegment(body_statement_list, condition_list, input_list, output_list, intermediate_list, 0);
-    if(test_statement != nullptr) {
-        Condition test_pass_condition(dynamic_cast<SgExprStatement*>(test_statement) -> get_expression());
-        body -> add_condition(test_pass_condition);
-    }
 
     loop_segment_list.push_back(body);
+
+    if(test_statement != nullptr) {
+      vector<SgStatement*> _statement_list;
+      CodeSegment* test_segment = new CodeSegment(_statement_list, condition_list, input_list, output_list, intermediate_list, 0);
+      Condition test_break_condition(dynamic_cast<SgExprStatement*>(test_statement) -> get_expression(), true);
+      test_segment -> add_condition(test_break_condition);
+      test_segment -> is_break = true;
+      loop_segment_list.push_back(test_segment);
+    }
 }
