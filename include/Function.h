@@ -37,7 +37,7 @@ public:
         }
         cout << endl;*/
 
-        segment = CodeSegment(statement_list);
+        segment = CodeSegment(statement_list, this);
         segment.input_list = input_list;
         segment.analyze();
 

@@ -23,14 +23,14 @@ bool CodeSegment::partition() {
             }*/
 
             vector<SgStatement*> statement_list1(statement_list.begin(), statement_list.begin() + current_ptr);
-            CodeSegment* segment1 = new CodeSegment(statement_list1, condition_list, input_list, output_list, intermediate_list, 0);
+            CodeSegment* segment1 = new CodeSegment(statement_list1, condition_list, input_list, output_list, intermediate_list, 0, this);
             vector<SgStatement*> statement_list2;
             statement_list2.push_back(statement);
 //            cout << "generate loop segment: " << endl;
 //            cout << "condition: " << get_condition_str() << endl;
-            LoopSegment* segment2 = new LoopSegment(statement_list2, condition_list, input_list, output_list, intermediate_list, 0);
+            LoopSegment* segment2 = new LoopSegment(statement_list2, condition_list, input_list, output_list, intermediate_list, 0, this);
             vector<SgStatement*> statement_list3(statement_list.begin() + current_ptr + 1, statement_list.end());
-            CodeSegment* segment3 = new CodeSegment(statement_list3, condition_list, input_list, output_list, intermediate_list, 0);
+            CodeSegment* segment3 = new CodeSegment(statement_list3, condition_list, input_list, output_list, intermediate_list, 0, this);
 
             if(segment1 -> statement_list.size() > 0 || segment1 -> is_break || segment1 -> is_continue) {
                 segment_list.push_back(segment1);
@@ -57,7 +57,7 @@ bool CodeSegment::partition() {
                 }*/
 
                 vector<SgStatement*> statement_list1(statement_list.begin(), statement_list.begin() + current_ptr);
-                CodeSegment* segment1 = new CodeSegment(statement_list1, condition_list, input_list, output_list, intermediate_list, 0);
+                CodeSegment* segment1 = new CodeSegment(statement_list1, condition_list, input_list, output_list, intermediate_list, 0, this);
 
                 SgExprListExp* expr_list = func_call_exp -> get_args();
 //                cout << "SgExprListExp: " << expr_list -> unparseToString() << "\t|\t" << expr_list -> class_name() << endl;
@@ -81,7 +81,7 @@ bool CodeSegment::partition() {
                 // TODO check recursion
 
                 vector<SgStatement*> statement_list3(statement_list.begin() + current_ptr + 1, statement_list.end());
-                CodeSegment* segment3 = new CodeSegment(statement_list3, condition_list, input_list, output_list, intermediate_list, 0);
+                CodeSegment* segment3 = new CodeSegment(statement_list3, condition_list, input_list, output_list, intermediate_list, 0, this);
 
                 segment_list.push_back(segment1);
                 segment_list.push_back(segment3);
@@ -144,6 +144,7 @@ void CodeSegment::handle_variable_declaration(SgVariableDeclaration* statement) 
 }
 
 // TODO  ++  +=
+// TODO 定位矩阵运算
 void CodeSegment::handle_expr_statement(SgExprStatement* statement) {
 //    cout << endl << "handle expr statement: " << statement -> unparseToString() << "\t|\t" << statement -> class_name() << endl;
     vector<SgNode*> node_list = statement -> get_traversalSuccessorContainer();
@@ -253,7 +254,7 @@ void CodeSegment::handle_if_statement(SgIfStmt* statement) {
     SgExpression* condition_expr = dynamic_cast<SgExprStatement*>(condition_statement) -> get_expression();
     SgExpression* expr = handle_expression(condition_expr);
 
-    CodeSegment* false_segment = new CodeSegment(statement_list, condition_list, input_list, output_list, intermediate_list, current_ptr);
+    CodeSegment* false_segment = new CodeSegment(statement_list, condition_list, input_list, output_list, intermediate_list, current_ptr, this);
 
     Condition true_condition(expr);
     add_condition(true_condition);

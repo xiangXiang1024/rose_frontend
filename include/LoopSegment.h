@@ -15,13 +15,13 @@ public:
 
     LoopSegment() {}
 
-    LoopSegment(vector<SgStatement*> _statement_list) {
+    /*LoopSegment(vector<SgStatement*> _statement_list) {
         for(SgStatement* s : _statement_list) {
             statement_list.push_back(s);
         }
-    }
+    }*/
 
-    LoopSegment(vector<SgStatement*> _statement_list, vector<Condition> _condition_list) {
+    /*LoopSegment(vector<SgStatement*> _statement_list, vector<Condition> _condition_list) {
         for(SgStatement* s : _statement_list) {
             statement_list.push_back(s);
         }
@@ -29,9 +29,9 @@ public:
         for(Condition c : _condition_list) {
             condition_list.push_back(c);
         }
-    }
+    }*/
 
-    LoopSegment(vector<SgStatement*> _statement_list, vector<Condition> _condition_list, int _current_ptr) {
+    /*LoopSegment(vector<SgStatement*> _statement_list, vector<Condition> _condition_list, int _current_ptr) {
         for(SgStatement* s : _statement_list) {
             statement_list.push_back(s);
         }
@@ -40,11 +40,11 @@ public:
             condition_list.push_back(c);
         }
         current_ptr = _current_ptr;
-    }
+    }*/
 
     LoopSegment(vector<SgStatement *> _statement_list, vector<Condition> _condition_list,
             vector<Variable> _input_list, vector<Variable> _output_list,
-            vector<Variable> _intermediate_list, int _current_ptr) {
+            vector<Variable> _intermediate_list, int _current_ptr, Code* _parent_node) {
         for(SgStatement* s : _statement_list) {
             statement_list.push_back(s);
         }
@@ -64,6 +64,7 @@ public:
             intermediate_list.push_back(v2);
         }
         current_ptr = _current_ptr;
+        parent_node = _parent_node;
     }
 
 
