@@ -12,15 +12,20 @@
 class ArrayVariable : public Variable {
 public:
     vector<IndexVariable*> index_list;
+    string array_name;
 
-    ArrayVariable() {}
+    ArrayVariable() {
+        is_array = true;
+    }
 
     ArrayVariable(SgPntrArrRefExp* arr_ref) {
         arr_ref_exp = arr_ref;
         index_list = get_index_list(arr_ref);
-        variable_name = index_list.at(0) -> variable_name;
+        array_name = index_list.at(0) -> variable_name;
+        variable_name = arr_ref -> unparseToString();
         type = index_list.at(0) -> type;
         index_list.erase(index_list.begin());
+        is_array = true;
     }
 
     void print() {

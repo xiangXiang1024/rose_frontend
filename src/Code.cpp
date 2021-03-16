@@ -9,9 +9,9 @@ SgExpression* Code::handle_binary_op(SgBinaryOp* binary_op) {
     SgExpression* right = binary_op ->get_rhs_operand();
 
     if(left -> class_name() == "SgVarRefExp") {
-        Variable ref_variable = get_intermediate_variable(left -> unparseToString());
-        if(ref_variable.get_expression() != nullptr) {
-            binary_op -> set_lhs_operand(ref_variable.get_expression());
+        Variable* ref_variable = get_intermediate_variable(left -> unparseToString());
+        if(ref_variable -> get_expression() != nullptr) {
+            binary_op -> set_lhs_operand(ref_variable -> get_expression());
         }
     }else {
         SgBinaryOp* left_binary_op = dynamic_cast<SgBinaryOp*>(left);
@@ -24,9 +24,9 @@ SgExpression* Code::handle_binary_op(SgBinaryOp* binary_op) {
     }
 
     if(right -> class_name() == "SgVarRefExp") {
-        Variable ref_variable = get_intermediate_variable(right -> unparseToString());
-        if(ref_variable.get_expression() != nullptr) {
-            binary_op -> set_rhs_operand(ref_variable.get_expression());
+        Variable* ref_variable = get_intermediate_variable(right -> unparseToString());
+        if(ref_variable -> get_expression() != nullptr) {
+            binary_op -> set_rhs_operand(ref_variable -> get_expression());
         }
     }else {
         SgBinaryOp* right_binary_op = dynamic_cast<SgBinaryOp*>(right);
@@ -47,9 +47,9 @@ SgExpression* Code::handle_unary_op(SgUnaryOp* binary_op) {
 
 SgExpression* Code::handle_expression(SgExpression* expression) {
     if(dynamic_cast<SgVarRefExp*>(expression) != nullptr) {
-        Variable ref_variable = get_intermediate_variable(expression -> unparseToString());
-        if(ref_variable.get_expression() != nullptr) {
-            return ref_variable.get_expression();
+        Variable* ref_variable = get_intermediate_variable(expression -> unparseToString());
+        if(ref_variable -> get_expression() != nullptr) {
+            return ref_variable -> get_expression();
         }
     }else if(dynamic_cast<SgBinaryOp*>(expression) != nullptr) {
         SgBinaryOp* binary_op = dynamic_cast<SgBinaryOp*>(expression);

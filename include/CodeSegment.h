@@ -19,14 +19,9 @@ public:
     bool is_break = false;
     bool is_continue = false;
     Code* parent_node = nullptr;
+    bool has_array_operation = false;
 
     CodeSegment() {}
-
-    /*CodeSegment(vector<SgStatement*> _statement_list) {
-        for(SgStatement* s : _statement_list) {
-            statement_list.push_back(s);
-        }
-    }*/
 
     CodeSegment(vector<SgStatement*> _statement_list, Code* _parent_node) {
         for(SgStatement* s : _statement_list) {
@@ -35,71 +30,32 @@ public:
         parent_node = _parent_node;
     }
 
-    /*CodeSegment(vector<SgStatement*> _statement_list, vector<Condition> _condition_list) {
-        for(SgStatement* s : _statement_list) {
-            statement_list.push_back(s);
-        }
-
-        for(Condition c : _condition_list) {
-            condition_list.push_back(c);
-        }
-    }*/
-
-    /*CodeSegment(vector<SgStatement*> _statement_list, vector<Condition> _condition_list, int _current_ptr) : current_ptr(_current_ptr) {
-        for(SgStatement* s : _statement_list) {
-            statement_list.push_back(s);
-        }
-
-        for(Condition c : _condition_list) {
-            condition_list.push_back(c);
-        }
-    }*/
-
-    /*CodeSegment(vector<SgStatement *> _statement_list, vector<Condition> _condition_list,
-                             vector<Variable> _input_list, vector<Variable> _output_list,
-                             vector<Variable> _intermediate_list, int _current_ptr) {
-        for(SgStatement* s : _statement_list) {
+    CodeSegment(vector<SgStatement*> _statement_list, vector<Condition> _condition_list,
+                vector<Variable*> _input_list, vector<Variable*> _output_list,
+                vector<Variable*> _intermediate_list, int _current_ptr, Code* _parent_node) {
+        statement_list = _statement_list;
+        condition_list = _condition_list;
+        input_list = _input_list;
+        intermediate_list = _intermediate_list;
+        output_list = _output_list;
+        /*for(SgStatement* s : _statement_list) {
             statement_list.push_back(s);
         }
         for(Condition c : _condition_list) {
             condition_list.push_back(c);
         }
-        for(Variable v : _input_list) {
-            Variable v2(v);
-            input_list.push_back(v2);
+        for(Variable* v : _input_list) {
+            Variable v2(*v);
+            input_list.push_back(&v2);
         }
-        for(Variable v : _output_list) {
-            Variable v2(v);
-            output_list.push_back(v2);
+        for(Variable* v : _output_list) {
+            Variable v2(*v);
+            output_list.push_back(&v2);
         }
-        for(Variable v : _intermediate_list) {
-            Variable v2(v);
-            intermediate_list.push_back(v2);
-        }
-        current_ptr = _current_ptr;
-    }*/
-
-    CodeSegment(vector<SgStatement *> _statement_list, vector<Condition> _condition_list,
-                vector<Variable> _input_list, vector<Variable> _output_list,
-                vector<Variable> _intermediate_list, int _current_ptr, Code* _parent_node) {
-        for(SgStatement* s : _statement_list) {
-            statement_list.push_back(s);
-        }
-        for(Condition c : _condition_list) {
-            condition_list.push_back(c);
-        }
-        for(Variable v : _input_list) {
-            Variable v2(v);
-            input_list.push_back(v2);
-        }
-        for(Variable v : _output_list) {
-            Variable v2(v);
-            output_list.push_back(v2);
-        }
-        for(Variable v : _intermediate_list) {
-            Variable v2(v);
-            intermediate_list.push_back(v2);
-        }
+        for(Variable* v : _intermediate_list) {
+            Variable v2(*v);
+            intermediate_list.push_back(&v2);
+        }*/
         current_ptr = _current_ptr;
         parent_node = _parent_node;
     }
@@ -114,22 +70,25 @@ public:
         }
 
         cout << "input_list: " << endl;
-        for(Variable v : input_list) {
-            v.print();
+        for(Variable* v : input_list) {
+            v -> print();
         }
         cout << "intermediate_list: " << endl;
-        for(Variable v : intermediate_list) {
-            v.print();
+        for(Variable* v : intermediate_list) {
+            v -> print();
         }
         cout << "output_list: " << endl;
-        for(Variable v : output_list) {
-            v.print();
+        for(Variable* v : output_list) {
+            v -> print();
         }
         if(is_break) {
             cout << "is break path" << endl;
         }
         if(is_continue) {
             cout << "is continue path" << endl;
+        }
+        if(has_array_operation) {
+            cout << "segment contains array operation" << endl;
         }
         cout << "========" << endl;
 
@@ -193,15 +152,35 @@ public:
             }
         }
 
-        for(Variable v : output_list) {
-            Variable tmp = get_intermediate_variable(v.variable_name);
-            if(tmp.get_expression() != nullptr) {
+        for(Variable* v : output_list) {
+            Variable* tmp = get_intermediate_variable(v -> variable_name);
+            if(tmp -> get_expression() != nullptr) {
                 add_output(tmp);
             }
         }
 
         calculate_input();
-//        print();
+
+        // TODO check array
+        vector<ArrayVariable*> array_list;
+        for(Variable* v : intermediate_list) {
+            if(v -> is_array) {
+//                cout << "segment has array" << endl;
+//                v.print();
+                if(v -> get_expression() != nullptr) {
+                    has_array_operation = true;
+                    if(dynamic_cast<ArrayVariable*>(v) == nullptr) {
+                        cout << v -> variable_name << " can't be casted to array variable*" << endl;
+                    }else {
+                        array_list.push_back(dynamic_cast<ArrayVariable*>(v));
+                    }
+                }
+            }
+        }
+        // TODO do array analyze
+        for(ArrayVariable* array : array_list) {
+            handle_array(array);
+        }
     };
 
     bool partition();
@@ -249,9 +228,15 @@ private:
 
     SgFunctionCallExp* has_func_call(SgNode* statement);
 
-    vector<Variable> get_ref_variable_list(SgExpression* expression);
+    vector<Variable*> get_ref_variable_list(SgExpression* expression);
 
     vector<SgExpression*> get_var_ref(SgExpression* expression);
+
+    void handle_array(ArrayVariable* array) {
+        // TODO
+        cout << "TODO handle array" << endl;
+        array -> print();
+    }
 };
 
 

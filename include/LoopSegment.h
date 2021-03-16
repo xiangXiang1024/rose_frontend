@@ -15,54 +15,32 @@ public:
 
     LoopSegment() {}
 
-    /*LoopSegment(vector<SgStatement*> _statement_list) {
-        for(SgStatement* s : _statement_list) {
-            statement_list.push_back(s);
-        }
-    }*/
-
-    /*LoopSegment(vector<SgStatement*> _statement_list, vector<Condition> _condition_list) {
-        for(SgStatement* s : _statement_list) {
-            statement_list.push_back(s);
-        }
-
-        for(Condition c : _condition_list) {
-            condition_list.push_back(c);
-        }
-    }*/
-
-    /*LoopSegment(vector<SgStatement*> _statement_list, vector<Condition> _condition_list, int _current_ptr) {
-        for(SgStatement* s : _statement_list) {
-            statement_list.push_back(s);
-        }
-
-        for(Condition c : _condition_list) {
-            condition_list.push_back(c);
-        }
-        current_ptr = _current_ptr;
-    }*/
-
     LoopSegment(vector<SgStatement *> _statement_list, vector<Condition> _condition_list,
-            vector<Variable> _input_list, vector<Variable> _output_list,
-            vector<Variable> _intermediate_list, int _current_ptr, Code* _parent_node) {
-        for(SgStatement* s : _statement_list) {
+            vector<Variable*> _input_list, vector<Variable*> _output_list,
+            vector<Variable*> _intermediate_list, int _current_ptr, Code* _parent_node) {
+        /*for(SgStatement* s : _statement_list) {
             statement_list.push_back(s);
         }
         for(Condition c : _condition_list) {
             condition_list.push_back(c);
         }
-        for(Variable v : _input_list) {
-            Variable v2(v);
-            input_list.push_back(v2);
+        for(Variable* v : _input_list) {
+            Variable v2(*v);
+            input_list.push_back(&v2);
         }
-        for(Variable v : _output_list) {
-            Variable v2(v);
-            output_list.push_back(v2);
+        for(Variable* v : _output_list) {
+            Variable v2(*v);
+            output_list.push_back(&v2);
         }
-        for(Variable v : _intermediate_list) {
-            Variable v2(v);
-            intermediate_list.push_back(v2);
-        }
+        for(Variable* v : _intermediate_list) {
+            Variable v2(*v);
+            intermediate_list.push_back(&v2);
+        }*/
+        statement_list = _statement_list;
+        condition_list = _condition_list;
+        input_list = _input_list;
+        intermediate_list = _intermediate_list;
+        output_list = _output_list;
         current_ptr = _current_ptr;
         parent_node = _parent_node;
     }
@@ -112,6 +90,10 @@ public:
             cout << "initializer == nullptr" << endl;
         }else {
             initializer -> print();
+        }
+
+        if(has_array_operation) {
+            cout << "segment contains array operation" << endl;
         }
 
         if(loop_segment_list.size() > 0) {

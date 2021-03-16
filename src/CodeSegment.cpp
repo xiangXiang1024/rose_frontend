@@ -68,9 +68,9 @@ bool CodeSegment::partition() {
 //                cout << "SgExpressionPtrList&: " << endl;
                 for(auto expr_ptr : expr_ptr_list) {
 //                    cout << expr_ptr -> unparseToString() << "\t|\t" << expr_ptr -> class_name() << endl;
-                    vector<Variable> ref_variable_list = get_ref_variable_list(expr_ptr);
+                    vector<Variable*> ref_variable_list = get_ref_variable_list(expr_ptr);
 //                    cout << "ref variable: " << endl;
-                    for(Variable v : ref_variable_list) {
+                    for(Variable* v : ref_variable_list) {
 //                        v.print();
                         segment1 -> add_output(v);
                     }
@@ -120,7 +120,7 @@ void CodeSegment::handle_variable_declaration(SgVariableDeclaration* statement) 
     for(SgInitializedName* n : list) {
         SgType* type = n -> get_type();
         string var_name = n -> get_name();
-        Variable variable(var_name, type);
+        Variable* variable = new Variable(var_name, type);
 //        cout << "declare variable: " << var_name << "  type: " << type -> get_mangled() << endl;
 
         if(n -> get_initptr() == nullptr) {
@@ -132,7 +132,7 @@ void CodeSegment::handle_variable_declaration(SgVariableDeclaration* statement) 
 //            cout << "operand type: " << initializer -> get_operand() -> class_name() << endl;
 
             SgExpression* expression = handle_expression(dynamic_cast<SgExpression*>(initializer -> get_operand()));
-            variable.set_expression(expression);
+            variable -> set_expression(expression);
         }else {// TODO
 
         }
@@ -156,38 +156,31 @@ void CodeSegment::handle_expr_statement(SgExprStatement* statement) {
             SgNode* var_node = assign_op -> get_traversalSuccessorByIndex(0);
             if(dynamic_cast<SgVarRefExp*>(var_node) != nullptr) {
                 SgVarRefExp* var_ref = dynamic_cast<SgVarRefExp*>(var_node);
-                Variable v(var_ref);
+                Variable* v = new Variable(var_ref);
                 SgNode* expression_node = assign_op -> get_traversalSuccessorContainer().back();
                 SgExpression* expression = dynamic_cast<SgExpression*>(expression_node);
-                v.set_expression(handle_expression(expression));
+                v -> set_expression(handle_expression(expression));
                 set_intermediate_variable(v);
-            }else {
-                // TODO
-//                cout << "var_node: " << var_node -> unparseToString() << "\t|\t" << var_node -> class_name() << endl;
-                if(dynamic_cast<SgPntrArrRefExp*>(var_node) != nullptr) {
-                    cout << "TODO meet array: " << var_node -> unparseToString() << "\t|\t" << var_node -> class_name() << endl;
+            }else if(dynamic_cast<SgPntrArrRefExp*>(var_node) != nullptr) {
+//                    cout << "meet array: " << var_node -> unparseToString() << "\t|\t" << var_node -> class_name() << endl;
                     SgPntrArrRefExp* arr_ref = dynamic_cast<SgPntrArrRefExp*>(var_node);
-                    /*for(SgNode* n : arr_ref -> get_traversalSuccessorContainer()) {
-                        cout << n -> unparseToString() << "\t|\t" << n -> class_name() << endl;
-                        if(dynamic_cast<SgPntrArrRefExp*>(n) != nullptr) {
-                            for(SgNode* node : n -> get_traversalSuccessorContainer()) {
-                                cout << "    " << node -> unparseToString() << "\t|\t" << node -> class_name() << endl;
 
-                            }
-                        }
-                    }
-                    cout << "----------" << endl;*/
+//                    cout << "generate array variable: " << endl;
+                    ArrayVariable* array_variable = new ArrayVariable(arr_ref);
+//                    array_variable.print();
 
-                    cout << "TODO generate array variable: " << endl;
-                    ArrayVariable array_variable(arr_ref);
-                    array_variable.print();
-
-//                    Variable v(arr_ref);
                     SgNode* expression_node = assign_op -> get_traversalSuccessorContainer().back();
                     SgExpression* expression = dynamic_cast<SgExpression*>(expression_node);
-                    array_variable.set_expression(handle_expression(expression));
+                    array_variable -> set_expression(handle_expression(expression));
+
+//                    cout << "after analyze: " << endl;
+//                    array_variable.print();
                     set_intermediate_variable(array_variable);
-                }
+                    /*cout << "after add in handle_expr_statement() intermediate_list:" << endl;
+                    for(Variable intermediate_variable : intermediate_list) {
+                        intermediate_variable.print();
+                    }
+                    cout << endl;*/
             }
         }else if(dynamic_cast<SgUnaryOp*>(n) != nullptr) {// TODO
 //            cout << n->unparseToString() << "transfer to SgUnaryOp" << endl;
@@ -229,17 +222,10 @@ void CodeSegment::handle_expr_statement(SgExprStatement* statement) {
                     cout << node -> unparseToString() << "\t|\t" << node -> class_name() << endl;
                 }*/
             }
-
-            /*cout << "get_traversalSuccessorContainer: " << endl;
-            for(SgNode* node : unary_op -> get_traversalSuccessorContainer()) {
-                cout << node -> unparseToString() << "\t|\t" << node -> class_name() << endl;
-            }
-            cout << endl;*/
-
         }else if(n -> class_name().find("Assign")) {
             SgNode* var_node = n -> get_traversalSuccessorByIndex(0);
             SgVarRefExp* var_ref = dynamic_cast<SgVarRefExp*>(var_node);
-            Variable v(var_ref);
+            Variable* v = new Variable(var_ref);
             set_intermediate_variable(v);
         }else {
             // TODO
@@ -303,17 +289,17 @@ void CodeSegment::handle_return_statement(SgReturnStmt* statement) {
 //    cout << "get_traversalSuccessorContainer:" << endl;
 
     if(dynamic_cast<SgVarRefExp*>(expression) != nullptr) {
-        Variable output = get_intermediate_variable(dynamic_cast<SgVarRefExp*>(expression) -> get_symbol() -> get_declaration() -> get_name().getString());
-        if(output.variable_name == "") {
-            output = Variable(dynamic_cast<SgVarRefExp*>(expression));
+        Variable* output = get_intermediate_variable(dynamic_cast<SgVarRefExp*>(expression) -> get_symbol() -> get_declaration() -> get_name().getString());
+        if(output -> variable_name == "") {
+            output = new Variable(dynamic_cast<SgVarRefExp*>(expression));
         }
 //        Variable variable(dynamic_cast<SgVarRefExp*>(expression));
         add_output(output);
     }else if(dynamic_cast<SgPntrArrRefExp*>(expression) != nullptr) {
         SgPntrArrRefExp* array_ref = dynamic_cast<SgPntrArrRefExp*>(expression);
-        Variable output = get_intermediate_variable(array_ref -> unparseToString());
-        if(output.variable_name == "") {
-            output = Variable(array_ref);
+        Variable* output = get_intermediate_variable(array_ref -> unparseToString());
+        if(output -> variable_name == "") {
+            output = new Variable(array_ref);
         }
 //        cout << "get array output: ";
 //        output.print();
@@ -323,7 +309,7 @@ void CodeSegment::handle_return_statement(SgReturnStmt* statement) {
 //            cout << node -> class_name() << endl;
             if(node -> class_name() == "SgVarRefExp") {
                 SgVarRefExp* var_ref_exp = dynamic_cast<SgVarRefExp*>(node);
-                Variable output = get_intermediate_variable(var_ref_exp -> get_symbol() -> get_declaration() -> get_name().getString());
+                Variable* output = get_intermediate_variable(var_ref_exp -> get_symbol() -> get_declaration() -> get_name().getString());
 //                Variable variable(var_ref_exp);
                 add_output(output);
             }
@@ -353,9 +339,9 @@ SgExpression* CodeSegment::handle_expression(SgExpression* expression) {
 //    cout << "handle_expression: " << expression -> unparseToString() << "\t|\t" << expression -> class_name() << endl;
 
     if(dynamic_cast<SgVarRefExp*>(expression) != nullptr) {
-        Variable ref_variable = get_intermediate_variable(expression -> unparseToString());
-        if(ref_variable.get_expression() != nullptr) {
-            return ref_variable.get_expression();
+        Variable* ref_variable = get_intermediate_variable(expression -> unparseToString());
+        if(ref_variable -> get_expression() != nullptr) {
+            return ref_variable -> get_expression();
         }
     }else if(dynamic_cast<SgBinaryOp*>(expression) != nullptr) {
         SgBinaryOp* binary_op = dynamic_cast<SgBinaryOp*>(expression);
@@ -380,9 +366,9 @@ SgExpression* CodeSegment::handle_binary_op(SgBinaryOp* binary_op) {
     SgExpression* right = binary_op ->get_rhs_operand();
 
     if(left -> class_name() == "SgVarRefExp") {
-        Variable ref_variable = get_intermediate_variable(left -> unparseToString());
-        if(ref_variable.get_expression() != nullptr) {
-            binary_op -> set_lhs_operand(ref_variable.get_expression());
+        Variable* ref_variable = get_intermediate_variable(left -> unparseToString());
+        if(ref_variable -> get_expression() != nullptr) {
+            binary_op -> set_lhs_operand(ref_variable -> get_expression());
         }
     }else {
         SgBinaryOp* left_binary_op = dynamic_cast<SgBinaryOp*>(left);
@@ -397,9 +383,9 @@ SgExpression* CodeSegment::handle_binary_op(SgBinaryOp* binary_op) {
 //    cout << "right class: " << right -> class_name() << endl;
 //    cout << "right getFilenameString: " << right -> getFilenameString() << endl;
     if(right -> class_name() == "SgVarRefExp") {
-        Variable ref_variable = get_intermediate_variable(right -> unparseToString());
-        if(ref_variable.get_expression() != nullptr) {
-            binary_op -> set_rhs_operand(ref_variable.get_expression());
+        Variable* ref_variable = get_intermediate_variable(right -> unparseToString());
+        if(ref_variable -> get_expression() != nullptr) {
+            binary_op -> set_rhs_operand(ref_variable -> get_expression());
         }
     }else {
         SgBinaryOp* right_binary_op = dynamic_cast<SgBinaryOp*>(right);
@@ -417,50 +403,6 @@ SgExpression* CodeSegment::handle_binary_op(SgBinaryOp* binary_op) {
 void CodeSegment::add_condition(Condition condition) {
     condition_list.push_back(condition);
 }
-
-/*void CodeSegment::print() {
-    cout << "====" << get_condition_str() << "====" << endl;
-    cout << "statement: " << endl;
-    for(SgStatement* s : statement_list) {
-        cout << s -> unparseToString() << endl;
-    }
-
-    cout << "input_list: " << endl;
-    for(Variable v : input_list) {
-        v.print();
-    }
-    cout << "intermediate_list: " << endl;
-    for(Variable v : intermediate_list) {
-        v.print();
-    }
-    cout << "output_list: " << endl;
-    for(Variable v : output_list) {
-        v.print();
-    }
-    if(is_break) {
-        cout << "is break path" << endl;
-    }
-    if(is_continue) {
-        cout << "is continue path" << endl;
-    }
-    cout << "========" << endl;
-
-    if(segment_list.size() > 0) {
-        cout << "segment list: " << endl;
-        for(CodeSegment* c : segment_list) {
-            c -> print();
-        }
-        return;
-    }else {
-        cout << "segment_list.size() == 0" << endl;
-    }
-
-    if(other_execute_path_list.size() > 0) {
-        for(CodeSegment* c : other_execute_path_list) {
-            c -> print();
-        }
-    }
-}*/
 
 string CodeSegment::get_condition_str() {
     string s = "";
@@ -508,9 +450,9 @@ SgFunctionCallExp* CodeSegment::has_func_call(SgNode* statement) {
     return nullptr;
 }
 
-vector<Variable> CodeSegment::get_ref_variable_list(SgExpression* expression) {
+vector<Variable*> CodeSegment::get_ref_variable_list(SgExpression* expression) {
 //    cout << "get ref variables (expression: " << expression -> unparseToString() << " )" << endl;
-    vector<Variable> ref_variable_list;
+    vector<Variable*> ref_variable_list;
 
 //    cout << "get_traversalSuccessorContainer: " << endl;
     for(SgNode* n : expression -> get_traversalSuccessorContainer()) {
@@ -520,10 +462,10 @@ vector<Variable> CodeSegment::get_ref_variable_list(SgExpression* expression) {
         }
         if(dynamic_cast<SgVarRefExp*>(n) != nullptr) {
 //            cout << "find variable ref" << endl;
-            Variable ref_v(dynamic_cast<SgVarRefExp*>(n));
+            Variable* ref_v = new Variable(dynamic_cast<SgVarRefExp*>(n));
             bool has_variable = false;
-            for(Variable v : ref_variable_list) {
-                if(v.variable_name == ref_v.variable_name) {
+            for(Variable* v : ref_variable_list) {
+                if(v -> variable_name == ref_v -> variable_name) {
                     has_variable = true;
                     break;
                 }
@@ -533,11 +475,11 @@ vector<Variable> CodeSegment::get_ref_variable_list(SgExpression* expression) {
             }
         }
         if(dynamic_cast<SgExpression*>(n) != nullptr) {
-            vector<Variable> tmp_vector = get_ref_variable_list(dynamic_cast<SgExpression*>(n));
-            for(Variable ref_v : tmp_vector) {
+            vector<Variable*> tmp_vector = get_ref_variable_list(dynamic_cast<SgExpression*>(n));
+            for(Variable* ref_v : tmp_vector) {
                 bool has_variable = false;
-                for(Variable v : ref_variable_list) {
-                    if(v.variable_name == ref_v.variable_name) {
+                for(Variable* v : ref_variable_list) {
+                    if(v -> variable_name == ref_v -> variable_name) {
                         has_variable = true;
                         break;
                     }
@@ -557,16 +499,16 @@ void CodeSegment::calculate_input() {
 
 //    print();
 
-    vector<Variable> inputs;
+    vector<Variable*> inputs;
 
-    for(Variable v : output_list) {
-        SgExpression* expression = get_intermediate_variable(v.variable_name).get_expression();
+    for(Variable* v : output_list) {
+        SgExpression* expression = get_intermediate_variable(v -> variable_name) -> get_expression();
         if(expression != nullptr) {
 //            cout << v.variable_name << "parse expression: " << expression -> unparseToString() << endl;
             vector<SgExpression*> var_refs = get_var_ref(expression);
             for(SgExpression* ref : var_refs) {
-                Variable v = get_intermediate_variable(ref -> unparseToString());
-                if(v.variable_name != "") {
+                Variable* v = get_intermediate_variable(ref -> unparseToString());
+                if(v -> variable_name != "") {
                     inputs.push_back(v);
                 }
             }

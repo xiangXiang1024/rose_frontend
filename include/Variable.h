@@ -15,9 +15,10 @@ using namespace std;
 class Variable {
 public:
     string variable_name = "";
-    SgType *type;
+    SgType* type;
     SgExpression* init_expression = nullptr;
     string expression_str = "";
+    bool is_array = false;
 
     Variable(const string &_variable_name, SgType *_type)
         : variable_name(_variable_name), type(_type) {
@@ -39,6 +40,15 @@ public:
         SgInitializedName* initialize_name = var_ref -> get_symbol() -> get_declaration();
         variable_name = initialize_name -> get_name().getString();
         type = initialize_name -> get_type();
+    }
+
+    Variable(const Variable &v) {
+        expression = v.expression;
+        variable_name = v.variable_name;
+        type = v.type;
+        init_expression = v.init_expression;
+        expression_str = v.expression_str;
+        is_array = v.is_array;
     }
 
     void set_expression(SgExpression* exp) {

@@ -17,18 +17,30 @@
 class Code {
 public:
     vector<int> line_info;
-    vector<Variable> input_list;
-    vector<Variable> output_list;
-    vector<Variable> intermediate_list;
+    vector<Variable*> input_list;
+    vector<Variable*> output_list;
+    vector<Variable*> intermediate_list;
 
     virtual void analyze() {};
 
     void to_ir_content(stringstream* ir_output);
 
-    void add_input(Variable v) {
+    void add_input(Variable* v) {
+//        cout << "in func add_input: " << endl;
+        if(v == nullptr) {
+//            cout << "v == nullptr" << endl;
+            return;
+        }
+//        v -> print();
         bool has_variable = false;
-        for(Variable input : input_list) {
-            if(v.variable_name == input.variable_name) {
+        for(Variable* input : input_list) {
+//            cout << "input: ";
+            /*if(input == nullptr) {
+                cout << "input == nullptr" << endl;
+                continue;
+            }*/
+//            input -> print();
+            if(v -> variable_name == input -> variable_name) {
                 has_variable = true;
                 break;
             }
@@ -39,21 +51,21 @@ public:
         }
     }
 
-    void add_input(vector<Variable> variable_list) {
-        for(Variable v : variable_list) {
+    void add_input(vector<Variable*> variable_list) {
+        for(Variable* v : variable_list) {
             add_input(v);
         }
     }
 
-    void add_output(Variable v) {
+    void add_output(Variable* v) {
 //        cout << "add_output: " << endl;
 //        v.print();
 
         bool has_variable = false;
         for(int i = 0 ; i < output_list.size() ; i++) {
-            Variable output = output_list.at(i);
-            if(v.variable_name == output.variable_name) {
-                output_list.at(i).set_expression(v.get_expression());
+            Variable* output = output_list.at(i);
+            if(v -> variable_name == output -> variable_name) {
+                output_list.at(i) -> set_expression(v -> get_expression());
                 return;
             }
         }
@@ -64,51 +76,51 @@ public:
         }*/
     }
 
-    void add_output(vector<Variable> variable_list) {
-        for(Variable v : variable_list) {
+    void add_output(vector<Variable*> variable_list) {
+        for(Variable* v : variable_list) {
             add_output(v);
         }
     }
 
-    void add_intermediate(Variable v) {
+    void add_intermediate(Variable* v) {
         int i = -1;
-        for(Variable intermediate_variable : intermediate_list) {
+        for(Variable* intermediate_variable : intermediate_list) {
             i++;
-            if(v.variable_name == intermediate_variable.variable_name) {
+            if(v -> variable_name == intermediate_variable -> variable_name) {
                 intermediate_list.erase(intermediate_list.begin()+i);
                 break;
             }
         }
         intermediate_list.push_back(v);
 
-        /*cout << "intermediate_list:" << endl;
+        /*cout << "after add intermediate_list:" << endl;
         for(Variable intermediate_variable : intermediate_list) {
             intermediate_variable.print();
         }
         cout << endl;*/
     }
 
-    void add_intermediate(vector<Variable> variable_list) {
-        for(Variable v : variable_list) {
+    void add_intermediate(vector<Variable*> variable_list) {
+        for(Variable* v : variable_list) {
             add_intermediate(v);
         }
     }
 
-    void set_intermediate_variable(Variable v) {
+    void set_intermediate_variable(Variable* v) {
         add_intermediate(v);
     }
 
-    Variable get_intermediate_variable(string name) {
+    Variable* get_intermediate_variable(string name) {
         if(&intermediate_list == nullptr || intermediate_list.size() == 0) {
-            Variable v;
+            Variable* v = new Variable();
             return v;
         }
-        for(Variable variable : intermediate_list) {
-            if(variable.variable_name == name) {
+        for(Variable* variable : intermediate_list) {
+            if(variable -> variable_name == name) {
                 return variable;
             }
         }
-        Variable v;
+        Variable* v = new Variable();
         return v;
     }
 

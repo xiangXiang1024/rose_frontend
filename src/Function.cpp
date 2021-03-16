@@ -9,7 +9,7 @@ void Function::generate_input_list() {
     for (SgInitializedName* param : params -> get_args()) {
         string name = param -> get_name().getString();
         SgType* type = param -> get_type();
-        Variable variable(name, type);
+        Variable* variable = new Variable(name, type);
         add_input(variable);
         add_intermediate(variable);
     }
