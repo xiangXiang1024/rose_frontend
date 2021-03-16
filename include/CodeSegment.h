@@ -236,6 +236,27 @@ private:
         // TODO
         cout << "TODO handle array" << endl;
         array -> print();
+        vector<IndexVariable*> index_list = array -> index_list;
+        for(IndexVariable* index : index_list) {
+            string variable_name = index -> variable_name;
+            SgExpression* expr = nullptr;
+            Code* node = this;
+            while(node != nullptr && dynamic_cast<CodeSegment*>(node) != nullptr) {
+                Variable* v = node -> get_intermediate_variable(variable_name);
+                if(v != nullptr && v -> get_expression() != nullptr) {
+                    expr = v -> get_expression();
+                    break;
+                }
+                node = dynamic_cast<CodeSegment*>(node) -> parent_node;
+            }
+            if(expr != nullptr) {
+                cout << "find index " << variable_name << " expr: " << expr -> unparseToString() << endl;
+                index -> change_expr = expr;
+            }
+        }
+
+        cout << "---- after handle array ----" << endl;
+        array -> print();
     }
 };
 
