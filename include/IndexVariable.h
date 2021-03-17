@@ -5,16 +5,18 @@
 #ifndef FRONTEND_INDEXVARIABLE_H
 #define FRONTEND_INDEXVARIABLE_H
 
-#include "rose.h"
+//#include "rose.h"
+#include "Variable.h"
+#include "Condition.h"
 
 using namespace std;
 
-class IndexVariable {
+class IndexVariable : public Variable {
 public:
     string variable_name = "";
     SgType *type;
     SgExpression* initializer = nullptr;
-    SgExpression* constraint = nullptr;
+    Condition* constraint = nullptr;
     SgExpression* change_expr = nullptr;
 
     IndexVariable() {}
@@ -26,20 +28,20 @@ public:
     }
 
     void print() {
-        cout << variable_name << "\t\t(" << type -> unparseToString() << ")\t";
-        cout << "initializer|";
+        cout << variable_name << "\t\t(" << type -> unparseToString() << ")";
+        cout << "\t|initializer:";
         if(initializer == nullptr) {
             cout << "\t initializer == nullptr";
         }else {
             cout << "\t " << initializer -> unparseToString();
         }
-        cout << "constraint|";
+        cout << "\t|constraint:";
         if(constraint == nullptr) {
             cout << "\t constraint == nullptr";
         }else {
-            cout << "\t " << constraint -> unparseToString();
+            cout << "\t " << constraint -> get_string();
         }
-        cout << "change_expr|";
+        cout << "\t|change_expr:";
         if(change_expr == nullptr) {
             cout << "\t change_expr == nullptr";
         }else {

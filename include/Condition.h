@@ -8,8 +8,6 @@
 #ifndef FRONTEND_CONDITION_H
 #define FRONTEND_CONDITION_H
 
-#endif //FRONTEND_CONDITION_H
-
 using namespace std;
 
 class Condition {
@@ -23,3 +21,5 @@ public:
 
     string get_string();
 };
+
+#endif //FRONTEND_CONDITION_H

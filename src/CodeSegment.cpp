@@ -547,3 +547,133 @@ vector<SgExpression*> CodeSegment::get_var_ref(SgExpression* expression) {
 
     return var_refs;
 }
+
+void CodeSegment::handle_array(ArrayVariable* array) {
+//    cout << "handle array" << endl;
+//    array -> print();
+    vector<IndexVariable*> index_list = array -> index_list;
+    for(IndexVariable* index : index_list) {
+        string variable_name = index -> variable_name;
+        SgExpression* expr = nullptr;
+        Code* node = this;
+        while(node != nullptr && dynamic_cast<CodeSegment*>(node) != nullptr) {
+            Variable* v = node -> get_intermediate_variable(variable_name);
+            if(v != nullptr && v -> get_expression() != nullptr) {
+                expr = v -> get_expression();
+                break;
+            }
+            for(CodeSegment* segment : dynamic_cast<CodeSegment*>(node) -> segment_list) {
+                Variable* v = segment -> get_intermediate_variable(variable_name);
+                if(v != nullptr && v -> get_expression() != nullptr) {
+                    expr = v -> get_expression();
+                    break;
+                }
+            }
+            node = dynamic_cast<CodeSegment*>(node) -> parent_node;
+        }
+        if(expr != nullptr) {
+//            cout << "find index " << variable_name << " expr: " << expr -> unparseToString() << endl;
+            index -> change_expr = expr;
+        }
+        Condition* condition = get_condition_by_variable(variable_name);
+        if(condition != nullptr) {
+//            cout << "find " << index -> variable_name << " condition: " << condition -> get_string() << endl;
+            index -> constraint = condition;
+        }
+
+        SgExpression* init_expr = get_initializer_expr(variable_name, index);
+        if(init_expr != nullptr) {
+//            cout << "find " << variable_name << " init_expr: " << init_expr -> unparseToString() << endl;
+            index -> initializer = init_expr;
+        }
+    }
+
+//    cout << "---- after handle array ----" << endl;
+//    array -> print();
+}
+
+Condition* CodeSegment::get_condition_by_variable(string variable_name) {
+//    cout << "in func get_condition_by_variable\t\tvariable: " << variable_name << endl;
+
+    Code* node = this;
+    while(node != nullptr && dynamic_cast<CodeSegment*>(node) != nullptr) {
+        vector<Condition> condition_list = dynamic_cast<CodeSegment*>(node) -> condition_list;
+        for(Condition c : condition_list) {
+            SgExpression* expression = c.expression;
+//            cout << "expression: " << expression -> unparseToString() << endl;
+            bool find_var = false;
+            for(SgNode* node : expression -> get_traversalSuccessorContainer()) {
+//                cout << "\tnode: " << node -> unparseToString() << "\t|\t" << node -> class_name() << endl;
+                if(dynamic_cast<SgVarRefExp*>(node) != nullptr && node -> unparseToString() == variable_name) {
+                    find_var = true;
+                    break;
+                }
+            }
+            if(find_var) {
+                Condition* condition = new Condition(c.expression, c.is_false);
+                return condition;
+            }
+        }
+        node = dynamic_cast<CodeSegment*>(node) -> parent_node;
+    }
+
+    return nullptr;
+}
+
+SgExpression* CodeSegment::get_initializer_expr(string variable_name, IndexVariable* index) {
+//    cout << "in func get_initializer_expr\t\tvariable: " << variable_name << endl;
+
+    vector<SgExpression*> initializer_list;
+    Code* node = this;
+    Code* pre_node = nullptr;
+    while(node != nullptr && dynamic_cast<CodeSegment*>(node) != nullptr) {
+        bool has_initializer = false;
+        Variable* v = node -> get_intermediate_variable(variable_name);
+//        if(v != nullptr && v -> variable_name != "") {
+//            v -> print();
+//        }
+        if(v != nullptr && v -> variable_name != "" && v -> get_expression() != nullptr && v -> get_expression() -> unparseToString() != index -> change_expr -> unparseToString()) {
+            SgExpression* expr = v -> get_expression();
+            initializer_list.push_back(expr);
+            has_initializer = true;
+            break;
+        }
+        if(dynamic_cast<LoopSegment*>(node) != nullptr) {
+            CodeSegment* init_segment = dynamic_cast<LoopSegment*>(node) -> initializer;
+            Variable* v = init_segment -> get_intermediate_variable(variable_name);
+//            if(v != nullptr && v -> variable_name != "") {
+//                v -> print();
+//            }
+            if(v != nullptr && v -> variable_name != "" && v -> get_expression() != nullptr && v -> get_expression() -> unparseToString() != index -> change_expr -> unparseToString()) {
+                SgExpression* expr = v -> get_expression();
+                initializer_list.push_back(expr);
+                has_initializer = true;
+            }
+        }
+        if(has_initializer) {
+            return initializer_list.back();
+        }
+
+        for(CodeSegment* segment : dynamic_cast<CodeSegment*>(node) -> segment_list) {
+            if(pre_node == segment) {
+                break;
+            }
+            Variable* v = node -> get_intermediate_variable(variable_name);
+//            if(v != nullptr && v -> variable_name != "") {
+//                v -> print();
+//            }
+            if(v != nullptr && v->variable_name != "" && v -> get_expression() != nullptr && v -> get_expression() -> unparseToString() != index -> change_expr -> unparseToString()) {
+                SgExpression* expr = v -> get_expression();
+                initializer_list.push_back(expr);
+                has_initializer = true;
+            }
+            if(has_initializer) {
+                return initializer_list.back();
+            }
+        }
+        pre_node = node;
+        node = dynamic_cast<CodeSegment*>(node) -> parent_node;
+    }
+
+    return nullptr;
+}

@@ -6,7 +6,7 @@
 #define FRONTEND_ARRAYVARIABLE_H
 
 
-#include "Variable.h"
+//#include "Variable.h"
 #include "IndexVariable.h"
 
 class ArrayVariable : public Variable {
