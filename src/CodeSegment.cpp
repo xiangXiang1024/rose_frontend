@@ -514,7 +514,9 @@ void CodeSegment::calculate_input() {
             }
         }else {
 //            cout << v.variable_name << "is input" << endl;
-            inputs.push_back(v);
+            if(v -> variable_name != "") {
+                    inputs.push_back(v);
+            }
         }
     }
 

@@ -15,7 +15,7 @@ using namespace std;
 class Variable {
 public:
     string variable_name = "";
-    SgType* type;
+    SgType* type = nullptr;
     SgExpression* init_expression = nullptr;
     string expression_str = "";
     bool is_array = false;
@@ -71,7 +71,11 @@ public:
     }
 
     virtual void print() {
-        cout << variable_name << "\t\t(" << type -> unparseToString() << ")\t\t" << expression_str << endl;
+        if(type!=nullptr){
+          cout << variable_name << "\t\t(" << type -> unparseToString() << ")\t\t" << expression_str << endl;
+        }else{
+          cout << variable_name << "default" << expression_str << endl;
+        }
     }
 
 private:
