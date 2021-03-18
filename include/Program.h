@@ -10,6 +10,7 @@
 #include "Function.h"
 #include "rose.h"
 #include <vector>
+#include "../cjson_lib/CJsonObject.hpp"
 
 using namespace std;
 
@@ -17,7 +18,7 @@ class Program : public Code {
 public:
     string file_path;
     string file_name;
-    vector<Function> function_list;
+    vector<Function*> function_list;
     SgGlobal *global;
 
     void analyze() {
@@ -32,9 +33,9 @@ public:
                 continue;
             }
             if(auto* func_declaration = dynamic_cast<SgFunctionDeclaration*>(sgnode)) {
-                Function function(func_declaration);
+                Function* function = new Function(func_declaration);
                 function_list.push_back(function);
-                function.analyze();
+                function -> analyze();
             }
         }
     }
@@ -44,7 +45,28 @@ public:
     }
 
     string get_ir_content(int tab_num) {
-        string blank = common::get_line_start_blank(tab_num);
+//        neb::CJsonObject program_json("");
+//        program_json.Add("program_name", file_path);
+
+        stringstream ir_stream;
+        for(int i = 0 ; i < function_list.size() ; i++) {
+            Function* f = function_list.at(i);
+            ir_stream << f -> get_ir_content(tab_num+1);
+            if(i != function_list.size() - 1) {
+                ir_stream << "," << endl;
+            }
+        }
+
+        cout << "---- ir content ----" << endl;
+        cout << ir_stream.str() << endl;
+
+        return ir_stream.str();
+
+        /*cout << endl << "program json: " << endl;
+        cout << program_json.ToFormattedString() << endl;
+        return program_json.ToFormattedString();*/
+
+        /*string blank = common::get_line_start_blank(tab_num);
         stringstream ir_stream;
         ir_stream << blank << "program ir content" << endl;
         for(Function f : function_list) {
@@ -52,6 +74,6 @@ public:
             ir_stream << f.get_ir_content(tab_num+1) << endl;
             ir_stream << blank << "}";
         }
-        return ir_stream.str();
+        return ir_stream.str();*/
     }
 };

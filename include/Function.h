@@ -3,6 +3,7 @@
 //
 
 #include "CodeSegment.h"
+#include "../cjson_lib/CJsonObject.hpp"
 
 #ifndef FRONTEND_FUNCTION_H
 #define FRONTEND_FUNCTION_H
@@ -61,13 +62,41 @@ public:
     };
 
     string get_ir_content(int tab_num) {
-        string blank = common::get_line_start_blank(tab_num);
+        /*string blank = common::get_line_start_blank(tab_num);
         stringstream ir_stream;
         ir_stream << blank << "function: " << func_name << " ir content" << endl;
         ir_stream << blank << "{" << endl;
         ir_stream << segment.get_ir_content(tab_num+1) << endl;
-        ir_stream << blank << "}";
-        return ir_stream.str();
+        ir_stream << blank << "}";*/
+//        return ir_stream.str();
+
+        neb::CJsonObject function_json("");
+        function_json.Add("program_name", "TODO program name");
+        function_json.Add("function_name", func_name);
+
+        function_json.AddEmptySubObject("variables");
+        map<string, string> variable_map;
+        for(Variable* v : input_list) {
+            variable_map[v -> variable_name] = v -> type -> unparseToString();
+        }
+        for(Variable* v : output_list) {
+            variable_map[v -> variable_name] = v -> type -> unparseToString();
+        }
+        auto iter = variable_map.begin();
+        while(iter != variable_map.end()) {
+            function_json["variables"].Add(iter -> first, iter -> second);
+            iter++;
+        }
+
+        function_json.AddEmptySubArray("input_variables");
+        for(Variable* v : input_list) {
+            function_json["input_variables"].Add(v -> variable_name);
+        }
+
+        // TODO
+        function_json.AddEmptySubObject("return");
+
+        return function_json.ToFormattedString();
     }
 
 private:

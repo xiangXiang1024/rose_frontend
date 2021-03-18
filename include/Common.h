@@ -10,6 +10,8 @@
 namespace common {
     extern const std::string TAB;
 
+    extern const std::string FUNCTION_IR_TEMPLATE;
+
     extern const std::string FILE_NAME_STRING;
 
     extern std::map<VariantT, std::string> operator_str_map;
