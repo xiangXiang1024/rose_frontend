@@ -290,7 +290,10 @@ void CodeSegment::handle_return_statement(SgReturnStmt* statement) {
 
     if(dynamic_cast<SgVarRefExp*>(expression) != nullptr) {
         Variable* output = get_intermediate_variable(dynamic_cast<SgVarRefExp*>(expression) -> get_symbol() -> get_declaration() -> get_name().getString());
-        if(output -> variable_name == "") {
+        if(output == nullptr || output -> variable_name == "") {
+            output = get_input_variable(dynamic_cast<SgVarRefExp*>(expression) -> get_symbol() -> get_declaration() -> get_name().getString());
+        }
+        if(output == nullptr || output -> variable_name == "") {
             output = new Variable(dynamic_cast<SgVarRefExp*>(expression));
         }
 //        Variable variable(dynamic_cast<SgVarRefExp*>(expression));
@@ -306,11 +309,18 @@ void CodeSegment::handle_return_statement(SgReturnStmt* statement) {
         add_output(output);
     }else {
         for(SgNode* node : expression -> get_traversalSuccessorContainer()) {
-//            cout << node -> class_name() << endl;
+//            cout << "node: " << node -> unparseToString() << "\t|\t" << node -> class_name() << endl;
             if(node -> class_name() == "SgVarRefExp") {
                 SgVarRefExp* var_ref_exp = dynamic_cast<SgVarRefExp*>(node);
-                Variable* output = get_intermediate_variable(var_ref_exp -> get_symbol() -> get_declaration() -> get_name().getString());
-//                Variable variable(var_ref_exp);
+                string name = var_ref_exp -> get_symbol() -> get_declaration() -> get_name().getString();
+                Variable* output = get_intermediate_variable(name);
+                if(output == nullptr || output -> variable_name == "") {
+                    output = get_input_variable(name);
+                }
+                if(output == nullptr || output -> variable_name == "") {
+                    output = new Variable(dynamic_cast<SgVarRefExp*>(expression));
+                }
+                //                Variable variable(var_ref_exp);
                 add_output(output);
             }
         }

@@ -26,7 +26,7 @@ public:
 
     void add_input(Variable* v) {
 //        cout << "in func add_input: " << endl;
-        if(v == nullptr) {
+        if(v == nullptr || v -> variable_name == "") {
 //            cout << "v == nullptr" << endl;
             return;
         }
@@ -56,7 +56,24 @@ public:
         }
     }
 
+    Variable* get_input_variable(string name) {
+        if(&input_list == nullptr || input_list.size() == 0) {
+            Variable* v = new Variable();
+            return v;
+        }
+        for(Variable* variable : input_list) {
+            if(variable -> variable_name == name) {
+                return variable;
+            }
+        }
+        Variable* v = new Variable();
+        return v;
+    }
+
     void add_output(Variable* v) {
+        if(v == nullptr || v -> variable_name == "") {
+            return;
+        }
 //        cout << "add_output: " << endl;
 //        v.print();
 
@@ -82,6 +99,9 @@ public:
     }
 
     void add_intermediate(Variable* v) {
+        if(v == nullptr || v -> variable_name == "") {
+            return;
+        }
         int i = -1;
         for(Variable* intermediate_variable : intermediate_list) {
             i++;
