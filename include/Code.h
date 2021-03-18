@@ -5,14 +5,13 @@
 #ifndef FRONTEND_CODE_H
 #define FRONTEND_CODE_H
 
-#endif //FRONTEND_CODE_H
-
 #include <string>
 #include "rose.h"
 #include <vector>
 #include "ArrayVariable.h"
 #include <sstream>
 #include "Common.h"
+#include "../cjson_lib/CJsonObject.hpp"
 
 class Code {
 public:
@@ -134,3 +133,5 @@ public:
         return "TODO generate ir content";
     }
 };
+
+#endif //FRONTEND_CODE_H

@@ -22,6 +22,7 @@ link_directories(/usr/rose/lib)
 #把目录(./src)下所有源代码文件和头文件加入变量SRC_LIST
 AUX_SOURCE_DIRECTORY(./src SRC_LIST)
 AUX_SOURCE_DIRECTORY(./include INCLUDE_LIST)
+AUX_SOURCE_DIRECTORY(./cjson_lib CJSON_LIST)
 
 link_libraries(rose)
 
@@ -40,8 +41,9 @@ message("${Boost_INCLUDE_DIRS}")
 message("${Boost_LIBRARIES}")
 
 include_directories(./include)
+include_directories(./cjson_lib)
 #生成应用程序 frontend
-ADD_EXECUTABLE(frontend ${SRC_LIST} ${INCLUDE_LIST})
+ADD_EXECUTABLE(frontend ${SRC_LIST} ${INCLUDE_LIST} ${CJSON_LIST})
 
 target_link_libraries(frontend ${Boost_LIBRARIES} /usr/lib/x86_64-linux-gnu/libquadmath.so.0) #链接到工程
 install(TARGETS frontend RUNTIME DESTINATION bin)

@@ -6,6 +6,8 @@
 namespace common {
     const std::string TAB = "    ";
 
+    const std::string FUNCTION_IR_TEMPLATE = "{\"program_name\":\"PROGRAM_NAME\"}";
+
     std::map<VariantT, std::string> operator_str_map;
 
     void init_operator_str_map() {
