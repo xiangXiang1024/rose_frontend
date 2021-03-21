@@ -14,10 +14,13 @@ class Function : public Code {
 public:
     string func_name;
     CodeSegment segment;
+    CodeSegment recursion_segment;
+    bool is_recursive = false;
     vector<SgStatement*> statement_list;
     SgFunctionDeclaration* function_declaration;
+    map<string,string>* func_call_map;
 
-    Function(SgFunctionDeclaration* _function_declaration) : function_declaration(_function_declaration) {
+    Function(SgFunctionDeclaration* _function_declaration, map<string,string>* _map_func_call_map) : function_declaration(_function_declaration),func_call_map(_map_func_call_map) {
         func_name = function_declaration -> get_name().getString();
     }
 
@@ -38,7 +41,7 @@ public:
         }
         cout << endl;*/
 
-        segment = CodeSegment(statement_list, this);
+        segment = CodeSegment(statement_list, this, func_name, func_call_map);
         segment.input_list = input_list;
         segment.analyze();
 
@@ -55,10 +58,6 @@ public:
             cout << l << "    ";
         }
         cout << endl << endl;*/
-
-
-        cout << "**** func: " << func_name << " ****" << endl;
-        segment.print();
     };
 
     string get_ir_content(int tab_num) {

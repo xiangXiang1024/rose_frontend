@@ -24,7 +24,7 @@ void LoopSegment::handle_for_statement(SgForStatement* statement) {
                 statement_list.push_back(dynamic_cast<SgStatement*>(n));
             }
         }
-        initializer = new CodeSegment(statement_list, condition_list, input_list, output_list, intermediate_list, 0, this);
+        initializer = new CodeSegment(statement_list, condition_list, input_list, output_list, intermediate_list, 0, this, func_name, func_call_map);
     }
     /*if(test_statement == nullptr) {
         cout << "test_statement == nullptr" << endl;
@@ -49,7 +49,7 @@ void LoopSegment::handle_for_statement(SgForStatement* statement) {
     if(test_statement != nullptr) {
 //        cout << "test_statement -> class_name(): " << test_statement -> class_name() << "\t|\t" << test_statement -> unparseToString() << endl;
         vector<SgStatement*> _statement_list;
-        CodeSegment* test_segment = new CodeSegment(_statement_list, condition_list, input_list, output_list, intermediate_list, 0, this);
+        CodeSegment* test_segment = new CodeSegment(_statement_list, condition_list, input_list, output_list, intermediate_list, 0, this, func_name, func_call_map);
         Condition test_break_condition(dynamic_cast<SgExprStatement*>(test_statement) -> get_expression(), true);
         test_segment -> add_condition(test_break_condition);
         test_segment -> is_break = true;
@@ -75,7 +75,7 @@ void LoopSegment::handle_for_statement(SgForStatement* statement) {
         body_statement_list.push_back(expr_statement);
     }
 
-    CodeSegment* body = new CodeSegment(body_statement_list, condition_list, input_list, output_list, intermediate_list, 0, this);
+    CodeSegment* body = new CodeSegment(body_statement_list, condition_list, input_list, output_list, intermediate_list, 0, this, func_name, func_call_map);
     if(test_statement != nullptr) {
         Condition test_pass_condition(dynamic_cast<SgExprStatement*>(test_statement) -> get_expression());
         body -> add_condition(test_pass_condition);
@@ -117,7 +117,7 @@ void LoopSegment::handle_while_statment(SgWhileStmt* statement){
 
     if(test_statement != nullptr) {
           vector<SgStatement*> _statement_list;
-          CodeSegment* test_segment = new CodeSegment(_statement_list, condition_list, input_list, output_list, intermediate_list, 0, this);
+          CodeSegment* test_segment = new CodeSegment(_statement_list, condition_list, input_list, output_list, intermediate_list, 0, this, func_name, func_call_map);
           Condition test_break_condition(dynamic_cast<SgExprStatement*>(test_statement) -> get_expression(), true);
           test_segment -> add_condition(test_break_condition);
           test_segment -> is_break = true;
@@ -130,7 +130,7 @@ void LoopSegment::handle_while_statment(SgWhileStmt* statement){
         body_statement_list.push_back(dynamic_cast<SgStatement*>(s));
     }
 
-    CodeSegment* body = new CodeSegment(body_statement_list, condition_list, input_list, output_list, intermediate_list, 0, this);
+    CodeSegment* body = new CodeSegment(body_statement_list, condition_list, input_list, output_list, intermediate_list, 0, this, func_name, func_call_map);
     if(test_statement != nullptr) {
         Condition test_pass_condition(dynamic_cast<SgExprStatement*>(test_statement) -> get_expression());
         body -> add_condition(test_pass_condition);
@@ -149,13 +149,13 @@ void LoopSegment::handle_do_while_statement(SgDoWhileStmt* statement){
         body_statement_list.push_back(dynamic_cast<SgStatement*>(s));
     }
 
-    CodeSegment* body = new CodeSegment(body_statement_list, condition_list, input_list, output_list, intermediate_list, 0, this);
+    CodeSegment* body = new CodeSegment(body_statement_list, condition_list, input_list, output_list, intermediate_list, 0, this, func_name, func_call_map);
 
     loop_segment_list.push_back(body);
 
     if(test_statement != nullptr) {
       vector<SgStatement*> _statement_list;
-      CodeSegment* test_segment = new CodeSegment(_statement_list, condition_list, input_list, output_list, intermediate_list, 0, this);
+      CodeSegment* test_segment = new CodeSegment(_statement_list, condition_list, input_list, output_list, intermediate_list, 0, this, func_name, func_call_map);
       Condition test_break_condition(dynamic_cast<SgExprStatement*>(test_statement) -> get_expression(), true);
       test_segment -> add_condition(test_break_condition);
       test_segment -> is_break = true;

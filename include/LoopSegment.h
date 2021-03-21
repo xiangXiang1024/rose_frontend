@@ -17,7 +17,7 @@ public:
 
     LoopSegment(vector<SgStatement *> _statement_list, vector<Condition> _condition_list,
             vector<Variable*> _input_list, vector<Variable*> _output_list,
-            vector<Variable*> _intermediate_list, int _current_ptr, Code* _parent_node) {
+            vector<Variable*> _intermediate_list, int _current_ptr, Code* _parent_node, string _func_name, map<string,string>* _func_call_map) {
         /*for(SgStatement* s : _statement_list) {
             statement_list.push_back(s);
         }
@@ -43,6 +43,8 @@ public:
         output_list = _output_list;
         current_ptr = _current_ptr;
         parent_node = _parent_node;
+        func_name = _func_name;
+        func_call_map = _func_call_map;
     }
 
 

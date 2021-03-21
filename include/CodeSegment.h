@@ -20,19 +20,43 @@ public:
     bool is_continue = false;
     Code* parent_node = nullptr;
     bool has_array_operation = false;
+    bool is_func_call = false;
+    string ref_func_name = "";
+    string func_name = "";
+    map<string,string>* func_call_map;
 
     CodeSegment() {}
 
-    CodeSegment(vector<SgStatement*> _statement_list, Code* _parent_node) {
+    CodeSegment(CodeSegment& c_s){
+      this->statement_list = c_s.statement_list;
+      for(auto cs : c_s.segment_list){
+        this->segment_list.push_back(new CodeSegment(*cs));
+      }
+      this->other_execute_path_list = c_s.other_execute_path_list;
+      this->condition_list = c_s.condition_list;
+      this->current_ptr = c_s.current_ptr;
+      this->is_break = c_s.is_break;
+      this->is_continue = c_s.is_continue;
+      this->parent_node = c_s.parent_node;
+      this->has_array_operation = c_s.has_array_operation;
+      this->is_func_call = c_s.is_func_call;
+      this->ref_func_name = c_s.ref_func_name;
+      this->func_name = c_s.func_name;
+      this->func_call_map = c_s.func_call_map;
+    }
+
+    CodeSegment(vector<SgStatement*> _statement_list, Code* _parent_node, string _func_name, map<string,string>* _func_call_map) {
         for(SgStatement* s : _statement_list) {
             statement_list.push_back(s);
         }
         parent_node = _parent_node;
+        func_name = _func_name;
+        func_call_map = _func_call_map;
     }
 
     CodeSegment(vector<SgStatement*> _statement_list, vector<Condition> _condition_list,
                 vector<Variable*> _input_list, vector<Variable*> _output_list,
-                vector<Variable*> _intermediate_list, int _current_ptr, Code* _parent_node) {
+                vector<Variable*> _intermediate_list, int _current_ptr, Code* _parent_node, string _func_name, map<string,string>* _func_call_map) {
         statement_list = _statement_list;
         condition_list = _condition_list;
         input_list = _input_list;
@@ -58,6 +82,8 @@ public:
         }*/
         current_ptr = _current_ptr;
         parent_node = _parent_node;
+        func_name = _func_name;
+        func_call_map = _func_call_map;
     }
 
     void add_condition(Condition condition);
@@ -90,6 +116,9 @@ public:
         if(has_array_operation) {
             cout << "segment contains array operation" << endl;
         }
+        if(is_func_call){
+          cout << "is func call path" << endl;
+        }
         cout << "========" << endl;
 
         if(segment_list.size() > 0) {
@@ -107,26 +136,29 @@ public:
                 c -> print();
             }
         }
+
     }
 
     void analyze() {
         if(statement_list.size() == 0) {
             return;
         }
-        /*cout << "analyze code segment" << endl;
+/*
+        cout << "analyze code segment" << endl;
         cout << "condition: " << get_condition_str() << endl;
         cout << "code:" << endl;
         for(SgStatement* s : statement_list) {
             cout << s -> unparseToString() << endl;
-        }*/
+        }
+*/
 
         bool do_partition = partition();
-
-        /*cout << "after partition:" << endl;
+        /*
+        cout << "after partition:" << endl;
         for(CodeSegment* segment : segment_list) {
             segment -> print();
-        }*/
-
+        }
+        */
         if(do_partition) {
             // TODO
             for (auto it = segment_list.end()-1; it >= segment_list.begin(); it--) {
@@ -241,3 +273,5 @@ private:
 
 
 #endif //FRONTEND_CODESEGMENT_H
+
+
