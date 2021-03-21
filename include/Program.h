@@ -135,7 +135,7 @@ public:
         if(c_s->is_func_call&&c_s->ref_func_name!=terminal_name){
           for(auto func : function_list){
             if(func->func_name==c_s->ref_func_name){
-              *c_s = func->segment;
+              *c_s = *(new CodeSegment(func->segment));
               replace(c_s,terminal_name);
             }
           }
@@ -145,7 +145,7 @@ public:
         if(code_segment->is_func_call&&code_segment->ref_func_name!=terminal_name){
           for(auto func : function_list){
             if(func->func_name==code_segment->ref_func_name){
-              *code_segment = func->segment;
+              *code_segment = *(new CodeSegment(func->segment));
             }
           }
         }
