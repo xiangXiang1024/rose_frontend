@@ -46,6 +46,7 @@ bool CodeSegment::partition() {
             }*/
 
             do_partition = true;
+            break;
         }else {
             SgFunctionCallExp* func_call_exp = has_func_call(statement);
             if(func_call_exp != nullptr) {
@@ -203,7 +204,7 @@ void CodeSegment::handle_expr_statement(SgExprStatement* statement) {
                     cout << endl;*/
             }
         }else if(dynamic_cast<SgUnaryOp*>(n) != nullptr) {// TODO
-//            cout << n->unparseToString() << "transfer to SgUnaryOp" << endl;
+            cout << n->unparseToString() << "transfer to SgUnaryOp" << endl;
             SgUnaryOp* unary_op = dynamic_cast<SgUnaryOp*>(n);
 //            cout << "unary_op -> get_operand(): " << unary_op -> get_operand() -> unparseToString() << endl;
 //            cout << "unary_op -> get_operand_i(): " << unary_op -> get_operand_i() -> unparseToString() << endl;
@@ -242,13 +243,14 @@ void CodeSegment::handle_expr_statement(SgExprStatement* statement) {
                     cout << node -> unparseToString() << "\t|\t" << node -> class_name() << endl;
                 }*/
             }
-        }else if(n -> class_name().find("Assign")) {
+        }else if(static_cast<int>(n -> class_name().find("Assign"))!=-1) {
             SgNode* var_node = n -> get_traversalSuccessorByIndex(0);
             SgVarRefExp* var_ref = dynamic_cast<SgVarRefExp*>(var_node);
             Variable* v = new Variable(var_ref);
             set_intermediate_variable(v);
         }else {
             // TODO
+            parent_node->unrelated_lines.push_back(statement->get_file_info()->get_line());
         }
     }
 }
@@ -454,9 +456,16 @@ string CodeSegment::get_condition_str() {
 SgFunctionCallExp* CodeSegment::has_func_call(SgNode* statement) {
 //    cout << "check has_func_call node: " << endl;
 //    cout << "statement: " << statement -> unparseToString() << "\t|\t" << statement -> class_name() << endl;
+    SgFunctionCallExp* exp = dynamic_cast<SgFunctionCallExp*>(statement);
+    if(exp != nullptr&&static_cast<int>((exp->unparseToString()).find("<<"))!=-1){
+      return nullptr;
+    }
+
 
     if(dynamic_cast<SgFunctionCallExp*>(statement) != nullptr) {
 //        cout << "meet func call statement: " << statement -> unparseToString() << endl;
+        SgFunctionCallExp* exp = dynamic_cast<SgFunctionCallExp*>(statement);
+        cout << exp->unparseToString() <<endl;
         return dynamic_cast<SgFunctionCallExp*>(statement);
     }
 
@@ -709,4 +718,3 @@ SgExpression* CodeSegment::get_initializer_expr(string variable_name, IndexVaria
 
     return nullptr;
 }
-

@@ -25,21 +25,25 @@ public:
     }
 
     void analyze() {
-//        cout << "analyze function " << func_name << endl;
+        cout << "analyze function " << func_name << endl;
 
         generate_input_list();
-        /*cout << "inputs: ";
+        /*
+        cout << "inputs: ";
         for(Variable v : input_list) {
             cout << v.variable_name << "(" << v.type -> unparseToCompleteString() << ")    ";
         }
-        cout << endl << endl;*/
+        cout << endl << endl;
+        */
 
         generate_statement_list();
-        /*cout << "statement:" << endl;
+        /*
+        cout << "statement:" << endl;
         for (SgStatement* s : statement_list) {
             cout << s->unparseToString() << "\t\t|\t\t" << s->class_name() << endl;
         }
-        cout << endl;*/
+        cout << endl;
+        */
 
         segment = CodeSegment(statement_list, this, func_name, func_call_map);
         segment.input_list = input_list;
@@ -109,4 +113,5 @@ private:
 };
 
 #endif //FRONTEND_FUNCTION_H
+
 

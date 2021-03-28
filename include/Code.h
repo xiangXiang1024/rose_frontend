@@ -19,6 +19,7 @@ public:
     vector<Variable*> input_list;
     vector<Variable*> output_list;
     vector<Variable*> intermediate_list;
+    vector<int> unrelated_lines;
 
     virtual void analyze() {};
 
