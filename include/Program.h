@@ -135,7 +135,37 @@ public:
         if(c_s->is_func_call&&c_s->ref_func_name!=terminal_name){
           for(auto func : function_list){
             if(func->func_name==c_s->ref_func_name){
+              //cout<<"resc func"<<endl;
+              SgStatement* statement=c_s->statement_list.front();
+              //cout<<statement->unparseToString()<<endl;
+
+              SgFunctionCallExp* exp = Program::has_func_call(statement);
+
+              vector<Variable*> ref_list;
+              generate_ref_variable_list(ref_list,exp);
+
+              vector<Variable*>parameter_list;
+              generate_func_parameter_list(parameter_list,exp->getAssociatedFunctionDeclaration());
+
+              vector<SgStatement*> assignment_statement_list;
+              SgFunctionDeclaration* func_dec=func->function_declaration;
+              SgFunctionDefinition* func_def=func_dec->get_definition();
+              SgBasicBlock* block=func_def->get_body();
+              generate_assignment_statement_list(assignment_statement_list,ref_list,parameter_list,block);
+              /*
+              cout<<"new statements: "<<endl;
+              for(SgStatement* s:assignment_statement_list){
+                cout<<s->unparseToString()<<endl;
+              }
+            */
+
+
               *c_s = *(new CodeSegment(func->segment));
+              for(SgStatement* s:c_s->statement_list){
+                assignment_statement_list.push_back(s);
+              }
+              
+              c_s->statement_list=assignment_statement_list;
               replace(c_s,terminal_name);
             }
           }
@@ -151,5 +181,20 @@ public:
         }
       }
     }
+
+
+
+    
+    void generate_assignment_statement_list(vector<SgStatement*>&statement_list,vector<Variable*> ref_variable_list,vector<Variable*> func_parameter_list,SgNode* node);
+
+    void generate_ref_variable_list(vector<Variable*> &ref_list,SgFunctionCallExp* exp);
+
+    void generate_func_parameter_list(vector<Variable*> &parameter_list,SgFunctionDeclaration* func_declaration);
+
+    
+
+    SgFunctionCallExp* has_func_call(SgNode* statement) ;
+
+
 };
 
