@@ -12,6 +12,7 @@ bool CodeSegment::partition() {
 
     for( ; current_ptr < statement_list.size() ; current_ptr++) {
         SgStatement* statement = statement_list.at(current_ptr);
+//        cout << statement->class_name() <<endl;
 //        cout << "in partition(): statement: " << statement -> unparseToString() << "\t|\t" << statement -> class_name() << endl;
         if(dynamic_cast<SgForStatement*>(statement) != nullptr||dynamic_cast<SgWhileStmt*>(statement) != nullptr||dynamic_cast<SgDoWhileStmt*>(statement) != nullptr) {
 //            cout << "meet for partition" << endl;
@@ -50,12 +51,23 @@ bool CodeSegment::partition() {
         }else {
             SgFunctionCallExp* func_call_exp = has_func_call(statement);
             if(func_call_exp != nullptr) {
-//                cout << "meet func call" << endl;
-//                cout << "statement: " << statement -> unparseToString() << "\t|\t" << statement -> class_name() << endl;
-//                cout << "SgFunctionCallExp: " << func_call_exp -> unparseToString() << "\t|\t" << func_call_exp -> class_name() << endl;
-                /*for(SgNode* node : func_call_exp -> get_traversalSuccessorContainer()) {
+              /*
+                cout << "meet func call" << endl;
+                cout << "statement: " << statement -> unparseToString() << "\t|\t" << statement -> class_name() << endl;
+                for(SgNode* node : statement -> get_traversalSuccessorContainer()) {
                     cout << node -> unparseToString() << "\t|\t" << node -> class_name() << endl;
-                }*/
+                    if(dynamic_cast<SgAddOp*>(node)!=nullptr){
+                      SgAddOp* n = dynamic_cast<SgAddOp*>(node);
+                      for(SgNode* nn : n -> get_traversalSuccessorContainer()) {
+                        cout << nn -> unparseToString() << "\t|\t" << node -> class_name() << endl;
+                      }
+                    }
+                }
+                cout << "SgFunctionCallExp: " << func_call_exp -> unparseToString() << "\t|\t" << func_call_exp -> class_name() << endl;
+                for(SgNode* node : func_call_exp -> get_traversalSuccessorContainer()) {
+                    cout << node -> unparseToString() << "\t|\t" << node -> class_name() << endl;
+                }
+                */
 
                 vector<SgStatement*> statement_list1(statement_list.begin(), statement_list.begin() + current_ptr);
                 //cout << "statement_list1 : " << statement_list1.size() <<endl;
@@ -204,7 +216,7 @@ void CodeSegment::handle_expr_statement(SgExprStatement* statement) {
                     cout << endl;*/
             }
         }else if(dynamic_cast<SgUnaryOp*>(n) != nullptr) {// TODO
-            cout << n->unparseToString() << "transfer to SgUnaryOp" << endl;
+//            cout << n->unparseToString() << "transfer to SgUnaryOp" << endl;
             SgUnaryOp* unary_op = dynamic_cast<SgUnaryOp*>(n);
 //            cout << "unary_op -> get_operand(): " << unary_op -> get_operand() -> unparseToString() << endl;
 //            cout << "unary_op -> get_operand_i(): " << unary_op -> get_operand_i() -> unparseToString() << endl;
@@ -268,11 +280,15 @@ void CodeSegment::handle_if_statement(SgIfStmt* statement) {
     add_condition(true_condition);
 
     SgStatement* true_body = statement -> get_true_body();
-    SgBasicBlock* true_block = dynamic_cast<SgBasicBlock*>(true_body);
     vector<SgStatement*> true_statement_list;
-    for(auto s : true_block -> get_traversalSuccessorContainer()) {
-        true_statement_list.push_back(dynamic_cast<SgStatement*>(s));
-//        cout << s -> unparseToString() << endl;
+    if(true_body != nullptr) {
+        if(true_body -> class_name() == "SgBasicBlock") {
+            for(auto s : true_body -> get_traversalSuccessorContainer()) {
+                true_statement_list.push_back(dynamic_cast<SgStatement*>(s));
+            }
+        }else {
+            true_statement_list.push_back(true_body);
+        }
     }
     statement_list.erase(statement_list.begin() + current_ptr);
     statement_list.insert(statement_list.begin() + current_ptr, true_statement_list.begin(), true_statement_list.end());
@@ -296,10 +312,10 @@ void CodeSegment::handle_if_statement(SgIfStmt* statement) {
     false_segment -> current_ptr--;
     Condition false_condition(expr, true);
     false_segment -> add_condition(false_condition);
-
-//    cout << "false segment: " << endl;
-//    false_segment -> print();
-
+/*
+    cout << "false segment: " << endl;
+    false_segment -> print();
+*/
     other_execute_path_list.push_back(false_segment);
 }
 

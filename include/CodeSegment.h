@@ -156,7 +156,6 @@
               cout << s -> unparseToString() << endl;
           }
 */
-
           bool do_partition = partition();
 
 /*

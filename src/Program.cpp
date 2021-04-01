@@ -28,7 +28,6 @@ void Program::generate_ref_variable_list(vector<Variable*> &ref_list,SgFunctionC
 //                    }
 //                    cout << endl;
 
-        
                 }
 //                cout<<endl;
 
@@ -67,7 +66,7 @@ void Program::generate_assignment_statement_list(vector<SgStatement*>&statement_
                 statement_list.push_back(dynamic_cast<SgStatement*>(variableDeclaration));
             }
         }
-        
+
 
 
     }

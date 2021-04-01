@@ -164,7 +164,6 @@ public:
               for(SgStatement* s:c_s->statement_list){
                 assignment_statement_list.push_back(s);
               }
-              
               c_s->statement_list=assignment_statement_list;
               replace(c_s,terminal_name);
             }
@@ -184,14 +183,11 @@ public:
 
 
 
-    
     void generate_assignment_statement_list(vector<SgStatement*>&statement_list,vector<Variable*> ref_variable_list,vector<Variable*> func_parameter_list,SgNode* node);
 
     void generate_ref_variable_list(vector<Variable*> &ref_list,SgFunctionCallExp* exp);
 
     void generate_func_parameter_list(vector<Variable*> &parameter_list,SgFunctionDeclaration* func_declaration);
-
-    
 
     SgFunctionCallExp* has_func_call(SgNode* statement) ;
 
