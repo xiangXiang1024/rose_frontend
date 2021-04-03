@@ -81,10 +81,20 @@ public:
         // TODO file_name
     }
 
-    string get_ir_content(int tab_num) {
+    string get_ir_content() {
 //        neb::CJsonObject program_json("");
 //        program_json.Add("program_name", file_path);
-
+      neb::CJsonObject res("");
+      res.Add("file_name",file_name);
+      res.Add("file_path",file_path);
+      res.AddEmptySubArray("sections");
+      for(int i = 0 ; i < function_list.size() ; i++) {
+            Function* f = function_list.at(i);
+            f -> make_ir_content(res);
+        }
+        cout << res.ToFormattedString() <<endl;
+        return res.ToFormattedString();
+/*
         stringstream ir_stream;
         for(int i = 0 ; i < function_list.size() ; i++) {
             Function* f = function_list.at(i);

@@ -36,6 +36,7 @@ bool CodeSegment::partition() {
             if(segment1 -> statement_list.size() > 0 || segment1 -> is_break || segment1 -> is_continue) {
                 segment_list.push_back(segment1);
             }
+            segment2->type = "loop";
             segment_list.push_back(segment2);
             if(segment3 -> statement_list.size() > 0 || segment3 -> is_break || segment3 -> is_continue) {
                 segment_list.push_back(segment3);
@@ -108,11 +109,13 @@ bool CodeSegment::partition() {
                   do_partition = false;
                   is_func_call = true;
                   ref_func_name = ref_func_declaration->get_name();
+                  type = "func_call";
                   break;
                 }else{
                   if(statement_list1.size()!=0){
                     segment_list.push_back(segment1);
                   }
+                  segment2->type = "func_call";
                   segment_list.push_back(segment2);
                   if(statement_list3.size()!=0){
                     segment_list.push_back(segment3);
@@ -262,22 +265,27 @@ void CodeSegment::handle_expr_statement(SgExprStatement* statement) {
             set_intermediate_variable(v);
         }else {
             // TODO
-            parent_node->unrelated_lines.push_back(statement->get_file_info()->get_line());
+            if(parent_node==nullptr){
+              unrelated_lines.push_back(statement->get_file_info()->get_line());
+            }else{
+              parent_node->unrelated_lines.push_back(statement->get_file_info()->get_line());
+            }
         }
     }
 }
 
 void CodeSegment::handle_if_statement(SgIfStmt* statement) {
-//    cout << endl << "handle if statement\t\t" << statement -> unparseToString() << endl;
+    cout << endl << "handle if statement\t\t" << statement -> unparseToString() << endl;
 
     SgStatement* condition_statement = statement ->	get_conditional();
     SgExpression* condition_expr = dynamic_cast<SgExprStatement*>(condition_statement) -> get_expression();
     SgExpression* expr = handle_expression(condition_expr);
 
-    CodeSegment* false_segment = new CodeSegment(statement_list, condition_list, input_list, output_list, intermediate_list, current_ptr, this, func_name, func_call_map);
+    CodeSegment* false_segment = new CodeSegment(condition_list, input_list, output_list, intermediate_list, current_ptr, this, func_name, func_call_map);
+    CodeSegment* true_segment = new CodeSegment(condition_list, input_list, output_list, intermediate_list, current_ptr, this, func_name, func_call_map);
 
     Condition true_condition(expr);
-    add_condition(true_condition);
+    true_segment->add_condition(true_condition);
 
     SgStatement* true_body = statement -> get_true_body();
     vector<SgStatement*> true_statement_list;
@@ -289,10 +297,12 @@ void CodeSegment::handle_if_statement(SgIfStmt* statement) {
         }else {
             true_statement_list.push_back(true_body);
         }
+        true_segment->statement_list = true_statement_list;
+        traces.push_back(true_segment);
     }
-    statement_list.erase(statement_list.begin() + current_ptr);
-    statement_list.insert(statement_list.begin() + current_ptr, true_statement_list.begin(), true_statement_list.end());
-    current_ptr--;
+
+    Condition false_condition(expr, true);
+    false_segment -> add_condition(false_condition);
 
     SgStatement* false_body = statement -> get_false_body();
     vector<SgStatement*> false_statement_list;
@@ -304,19 +314,9 @@ void CodeSegment::handle_if_statement(SgIfStmt* statement) {
         }else if(false_body -> class_name() == "SgIfStmt") {
             false_statement_list.push_back(false_body);
         }
+        false_segment -> statement_list = false_statement_list;
+        traces.push_back(false_segment);
     }
-    false_segment -> statement_list.erase(false_segment -> statement_list.begin() + false_segment -> current_ptr);
-    if(false_body != nullptr) {
-        false_segment -> statement_list.insert(false_segment -> statement_list.begin() + false_segment -> current_ptr, false_statement_list.begin(), false_statement_list.end());
-    }
-    false_segment -> current_ptr--;
-    Condition false_condition(expr, true);
-    false_segment -> add_condition(false_condition);
-/*
-    cout << "false segment: " << endl;
-    false_segment -> print();
-*/
-    other_execute_path_list.push_back(false_segment);
 }
 
 void CodeSegment::handle_return_statement(SgReturnStmt* statement) {

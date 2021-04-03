@@ -114,6 +114,47 @@ public:
 
     void handle_do_while_statement(SgDoWhileStmt* statement);
 
+    neb::CJsonObject get_ir_content() {
+        neb::CJsonObject general_json("");
+        general_json.Add("type",type);
+        general_json.AddEmptySubArray("line_no");
+        general_json["line_no"].Add(get_begin_line_no());
+        general_json["line_no"].Add(get_end_line_no());
+        general_json.AddEmptySubArray("input");
+        for(Variable* v : input_list){
+          general_json["input"].Add(v->expression_str);
+        }
+        general_json.AddEmptySubArray("output");
+        for(Variable* v : output_list){
+          general_json["output"].Add(v->expression_str);
+        }
+        general_json.AddEmptySubArray("variables");
+        general_json.AddEmptySubArray("initialzie");
+        general_json.AddEmptySubArray("traces");
+        if(traces.size()!=0){
+          for(CodeSegment* trace : traces){
+              neb::CJsonObject trace_json("");
+              trace_json.Add("constraint",trace->get_condition_str());
+              trace_json.Add("break",trace->is_break);
+              trace_json.Add("continue",trace->is_continue);
+              trace_json.AddEmptySubArray("content");
+              if(trace->segment_list.size()==0){
+                trace_json["content"].Add(trace->get_ir_content());
+              }else{
+                for(CodeSegment* cs_in_trace : trace->segment_list){
+                  trace_json["content"].Add(cs_in_trace->get_ir_content());
+                }
+              }
+              general_json["traces"].Add(trace_json);
+            }
+        }
+        general_json.AddEmptySubArray("irrelevant");
+        for(int no : unrelated_lines){
+            general_json["irrelevant"].Add(no);
+        }
+        return general_json;
+      }
+/*
     string get_ir_content(int tab_num) {
         string blank = common::get_line_start_blank(tab_num);
         stringstream ir_stream;
@@ -123,6 +164,7 @@ public:
         }
         return ir_stream.str();
     }
+    */
 };
 
 

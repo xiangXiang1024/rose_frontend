@@ -41,6 +41,6 @@ void analyze(int argc, char **argv, string ir_file_path) {
 
 string get_ir_content(Program program) {
     stringstream ir_stream;
-    ir_stream << program.get_ir_content(1) << endl;
+    ir_stream << program.get_ir_content() << endl;
     return ir_stream.str();
 }

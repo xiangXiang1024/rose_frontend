@@ -13,7 +13,7 @@
   public:
       vector<SgStatement*> statement_list;
       vector<CodeSegment*> segment_list;
-      vector<CodeSegment*> other_execute_path_list;
+      vector<CodeSegment*> traces;
       vector<Condition> condition_list;
       int current_ptr = 0;
       bool is_break = false;
@@ -24,6 +24,7 @@
       string ref_func_name = "";
       string func_name = "";
       map<string,string>* func_call_map;
+      string type = "procedure";
 
       CodeSegment() {}
 
@@ -32,7 +33,7 @@
         for(auto cs : c_s.segment_list){
           this->segment_list.push_back(new CodeSegment(*cs));
         }
-        this->other_execute_path_list = c_s.other_execute_path_list;
+        this->traces = c_s.traces;
         this->condition_list = c_s.condition_list;
         this->current_ptr = c_s.current_ptr;
         this->is_break = c_s.is_break;
@@ -80,6 +81,19 @@
               Variable v2(*v);
               intermediate_list.push_back(&v2);
           }*/
+          current_ptr = _current_ptr;
+          parent_node = _parent_node;
+          func_name = _func_name;
+          func_call_map = _func_call_map;
+      }
+
+      CodeSegment(vector<Condition> _condition_list,
+                  vector<Variable*> _input_list, vector<Variable*> _output_list,
+                  vector<Variable*> _intermediate_list, int _current_ptr, Code* _parent_node, string _func_name, map<string,string>* _func_call_map) {
+          condition_list = _condition_list;
+          input_list = _input_list;
+          intermediate_list = _intermediate_list;
+          output_list = _output_list;
           current_ptr = _current_ptr;
           parent_node = _parent_node;
           func_name = _func_name;
@@ -136,8 +150,8 @@
               cout << "segment_list.size() == 0" << endl;
           }*/
 
-          if(other_execute_path_list.size() > 0) {
-              for(CodeSegment* c : other_execute_path_list) {
+          if(traces.size() > 0) {
+              for(CodeSegment* c : traces) {
                   c -> print();
               }
           }
@@ -182,7 +196,7 @@
                   handle_statement(statement);
               }
 
-              for(CodeSegment* segment : other_execute_path_list) {
+              for(CodeSegment* segment : traces) {
                   segment -> analyze();
                   add_output(segment -> output_list);
                   add_input(segment -> input_list);
@@ -240,7 +254,46 @@
 
       string get_condition_str();
 
-      string get_ir_content(int tab_num) {
+      neb::CJsonObject get_ir_content() {
+        neb::CJsonObject general_json("");
+        general_json.Add("type",type);
+        if(type=="func_call"){
+          general_json.Add("function_name",ref_func_name);
+        }
+        general_json.AddEmptySubArray("line_no");
+        general_json["line_no"].Add(get_begin_line_no());
+        general_json["line_no"].Add(get_end_line_no());
+        general_json.AddEmptySubArray("input");
+        for(Variable* v : input_list){
+          general_json["input"].Add(v->expression_str);
+        }
+        general_json.AddEmptySubArray("output");
+        for(Variable* v : output_list){
+          general_json["output"].Add(v->expression_str);
+        }
+        general_json.AddEmptySubArray("traces");
+        if(traces.size()!=0){
+          for(CodeSegment* trace : traces){
+              neb::CJsonObject trace_json("");
+              trace_json.Add("constraint",trace->get_condition_str());
+              trace_json.Add("break",trace->is_break);
+              trace_json.Add("continue",trace->is_continue);
+              trace_json.AddEmptySubArray("content");
+              if(trace->segment_list.size()==0){
+                trace_json["content"].Add(trace->get_ir_content());
+              }else{
+                for(CodeSegment* cs_in_trace : trace->segment_list){
+                  trace_json["content"].Add(cs_in_trace->get_ir_content());
+                }
+              }
+              general_json["traces"].Add(trace_json);
+            }
+        }
+        general_json.AddEmptySubArray("irrelevant");
+        for(int no : unrelated_lines){
+            general_json["irrelevant"].Add(no);
+        }
+        /*
           string blank = common::get_line_start_blank(tab_num);
           stringstream ir_stream;
           if(segment_list.size() > 0) {
@@ -249,16 +302,26 @@
               }
           }else {
               ir_stream << blank << "TODO: segment ir content" << endl;
-              if(other_execute_path_list.size() > 0) {
-                  for(CodeSegment* segment : other_execute_path_list) {
+              if(traces.size() > 0) {
+                  for(CodeSegment* segment : traces) {
                       ir_stream << blank << segment -> get_ir_content(tab_num+1) << endl;
                   }
               }
           }
           return ir_stream.str();
+        */
+        return general_json;
       }
 
       void calculate_input();
+
+      int get_begin_line_no(){
+        return statement_list.front()->get_file_info()->get_line();
+      }
+
+      int get_end_line_no(){
+        return statement_list.back()->get_file_info()->get_line();
+      }
 
   private:
       SgExpression* handle_binary_op(SgBinaryOp* binary_op);
