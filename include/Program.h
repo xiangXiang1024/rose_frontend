@@ -85,7 +85,7 @@ public:
 //        neb::CJsonObject program_json("");
 //        program_json.Add("program_name", file_path);
       neb::CJsonObject res("");
-      res.Add("file_name",file_name);
+      res.Add("file_name",file_path.substr(file_path.find_last_of('/')+1,file_path.size()));
       res.Add("file_path",file_path);
       res.AddEmptySubArray("sections");
       for(int i = 0 ; i < function_list.size() ; i++) {

@@ -73,6 +73,7 @@ void LoopSegment::handle_for_statement(SgForStatement* statement) {
             expr_statement->set_parent(statement);
         }
         body_statement_list.push_back(expr_statement);
+        critical_statement = expr_statement;
     }
 
     CodeSegment* body = new CodeSegment(body_statement_list, condition_list, input_list, output_list, intermediate_list, 0, this, func_name, func_call_map);

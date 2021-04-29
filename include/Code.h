@@ -20,17 +20,19 @@ public:
     vector<Variable*> output_list;
     vector<Variable*> intermediate_list;
     vector<int> unrelated_lines;
+    SgExprStatement* critical_statement = nullptr;
+    Code* parent_node = nullptr;
 
     virtual void analyze() {};
 
     void to_ir_content(stringstream* ir_output);
 
     void add_input(Variable* v) {
-//        cout << "in func add_input: " << endl;
         if(v == nullptr || v -> variable_name == "") {
 //            cout << "v == nullptr" << endl;
             return;
         }
+        //cout << "in func add_input: " << endl;
 //        v -> print();
         bool has_variable = false;
         for(Variable* input : input_list) {
@@ -49,6 +51,18 @@ public:
             input_list.push_back(v);
             intermediate_list.push_back(v);
         }
+        /*
+        cout << "after add input_list:" << endl;
+        for(Variable* input_variable : input_list) {
+            input_variable->print();
+        }
+        cout << endl;
+        cout << "after add intermediate_list:" << endl;
+        for(Variable* intermediate_variable : intermediate_list) {
+            intermediate_variable->print();
+        }
+        cout << endl;
+        */
     }
 
     void add_input(vector<Variable*> variable_list) {
@@ -77,7 +91,7 @@ public:
         }
 //        cout << "add_output: " << endl;
 //        v.print();
-
+        //cout << "in func add_output: " << endl;
         bool has_variable = false;
         for(int i = 0 ; i < output_list.size() ; i++) {
             Variable* output = output_list.at(i);
@@ -91,6 +105,13 @@ public:
         /*if(!has_variable) {
             output_list.push_back(v);
         }*/
+        /*
+        cout << "after add output_list:" << endl;
+        for(Variable* output_variable : output_list) {
+            output_variable->print();
+        }
+        cout << endl;
+        */
     }
 
     void add_output(vector<Variable*> variable_list) {
@@ -103,6 +124,7 @@ public:
         if(v == nullptr || v -> variable_name == "") {
             return;
         }
+        //cout << "in func add_intermediate: " << endl;
         int i = -1;
         for(Variable* intermediate_variable : intermediate_list) {
             i++;
@@ -113,11 +135,13 @@ public:
         }
         intermediate_list.push_back(v);
 
-        /*cout << "after add intermediate_list:" << endl;
-        for(Variable intermediate_variable : intermediate_list) {
-            intermediate_variable.print();
+        /*
+        cout << "after add intermediate_list:" << endl;
+        for(Variable* intermediate_variable : intermediate_list) {
+            intermediate_variable->print();
         }
-        cout << endl;*/
+        cout << endl;
+        */
     }
 
     void add_intermediate(vector<Variable*> variable_list) {

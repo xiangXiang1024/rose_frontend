@@ -134,7 +134,7 @@ bool CodeSegment::partition() {
 
 // TODO
 void CodeSegment::handle_statement(SgStatement* statement) {
-//    cout << "handle statement: " << statement -> unparseToString() << "\t|\t" << statement -> class_name() << endl;
+    cout << "handle statement: " << statement -> unparseToString() << "\t|\t" << statement -> class_name() << endl;
     if(dynamic_cast<SgVariableDeclaration*>(statement) != nullptr) {
         handle_variable_declaration(dynamic_cast<SgVariableDeclaration*>(statement));
     }else if(dynamic_cast<SgExprStatement*>(statement) != nullptr) {
@@ -182,10 +182,10 @@ void CodeSegment::handle_variable_declaration(SgVariableDeclaration* statement) 
 // TODO  ++  +=
 // TODO 定位矩阵运算
 void CodeSegment::handle_expr_statement(SgExprStatement* statement) {
-//    cout << endl << "handle expr statement: " << statement -> unparseToString() << "\t|\t" << statement -> class_name() << endl;
+    cout << endl << "handle expr statement: " << statement -> unparseToString() << "\t|\t" << statement -> class_name() << endl;
     vector<SgNode*> node_list = statement -> get_traversalSuccessorContainer();
     for(SgNode* n : node_list) {
-//        cout << n->unparseToString() << "\t" << n->class_name() << endl;
+        cout << n->unparseToString() << "\t" << n->class_name() << endl;
         if(dynamic_cast<SgAssignOp*>(n) != nullptr) {
 //            cout << "handle SgAssignOp" << endl;
             SgAssignOp* assign_op = dynamic_cast<SgAssignOp*>(n);
@@ -265,18 +265,14 @@ void CodeSegment::handle_expr_statement(SgExprStatement* statement) {
             set_intermediate_variable(v);
         }else {
             // TODO
-            if(parent_node==nullptr){
-              unrelated_lines.push_back(statement->get_file_info()->get_line());
-            }else{
-              parent_node->unrelated_lines.push_back(statement->get_file_info()->get_line());
-            }
+            unrelated_lines.push_back(statement->get_file_info()->get_line());
         }
     }
 }
 
 void CodeSegment::handle_if_statement(SgIfStmt* statement) {
-    cout << endl << "handle if statement\t\t" << statement -> unparseToString() << endl;
-
+//    cout << endl << "handle if statement\t\t" << statement -> unparseToString() << endl;
+/*
     SgStatement* condition_statement = statement ->	get_conditional();
     SgExpression* condition_expr = dynamic_cast<SgExprStatement*>(condition_statement) -> get_expression();
     SgExpression* expr = handle_expression(condition_expr);
@@ -298,8 +294,8 @@ void CodeSegment::handle_if_statement(SgIfStmt* statement) {
             true_statement_list.push_back(true_body);
         }
         true_segment->statement_list = true_statement_list;
-        traces.push_back(true_segment);
     }
+    traces.push_back(true_segment);
 
     Condition false_condition(expr, true);
     false_segment -> add_condition(false_condition);
@@ -315,8 +311,49 @@ void CodeSegment::handle_if_statement(SgIfStmt* statement) {
             false_statement_list.push_back(false_body);
         }
         false_segment -> statement_list = false_statement_list;
-        traces.push_back(false_segment);
     }
+    traces.push_back(false_segment);
+    */
+    SgStatement* condition_statement = statement ->	get_conditional();
+    SgExpression* condition_expr = dynamic_cast<SgExprStatement*>(condition_statement) -> get_expression();
+    SgExpression* expr = handle_expression(condition_expr);
+    CodeSegment* false_segment = new CodeSegment(statement_list,condition_list, input_list, output_list, intermediate_list, 0, this, func_name, func_call_map);
+    CodeSegment* true_segment = new CodeSegment(statement_list,condition_list, input_list, output_list, intermediate_list, 0, this, func_name, func_call_map);
+    Condition true_condition(expr);
+    true_segment->add_condition(true_condition);
+//cout << "ttttttttttttttttttttttttttttttttt" <<endl;
+    SgStatement* true_body = statement -> get_true_body();
+    SgBasicBlock* true_block = dynamic_cast<SgBasicBlock*>(true_body);
+    vector<SgStatement*> true_statement_list;
+    for(auto s : true_block -> get_traversalSuccessorContainer()) {
+        true_statement_list.push_back(dynamic_cast<SgStatement*>(s));
+        //cout << s -> unparseToString() << endl;
+    }
+    //cout << statement_list.size() <<endl;
+    //cout << true_segment->current_ptr <<endl;
+    true_segment->statement_list.erase(true_segment->statement_list.begin() + current_ptr);
+    true_segment->statement_list.insert(true_segment->statement_list.begin() + current_ptr, true_statement_list.begin(), true_statement_list.end());
+    traces.push_back(true_segment);
+
+//cout << "fffffffffffffffffffffffffffffffffffffff" <<endl;
+    SgStatement* false_body = statement -> get_false_body();
+    vector<SgStatement*> false_statement_list;
+    if(false_body != nullptr) {
+        if(false_body -> class_name() == "SgBasicBlock") {
+            for(auto s : false_body -> get_traversalSuccessorContainer()) {
+                false_statement_list.push_back(dynamic_cast<SgStatement*>(s));
+            }
+        }else if(false_body -> class_name() == "SgIfStmt") {
+            false_statement_list.push_back(false_body);
+        }
+    }
+    false_segment -> statement_list.erase(false_segment -> statement_list.begin() + current_ptr);
+    if(false_body != nullptr) {
+        false_segment -> statement_list.insert(false_segment -> statement_list.begin() + current_ptr, false_statement_list.begin(), false_statement_list.end());
+    }
+    Condition false_condition(expr, true);
+    false_segment -> add_condition(false_condition);
+    traces.push_back(false_segment);
 }
 
 void CodeSegment::handle_return_statement(SgReturnStmt* statement) {
@@ -327,6 +364,8 @@ void CodeSegment::handle_return_statement(SgReturnStmt* statement) {
 //    cout << "get_traversalSuccessorContainer:" << endl;
 
     if(dynamic_cast<SgVarRefExp*>(expression) != nullptr) {
+//   cout << "expr: " << expression -> unparseToString()  << "\t" << expression -> class_name() << "\t" << endl;
+
         Variable* output = get_intermediate_variable(dynamic_cast<SgVarRefExp*>(expression) -> get_symbol() -> get_declaration() -> get_name().getString());
         if(output == nullptr || output -> variable_name == "") {
             output = get_input_variable(dynamic_cast<SgVarRefExp*>(expression) -> get_symbol() -> get_declaration() -> get_name().getString());
@@ -371,13 +410,6 @@ void CodeSegment::handle_return_statement(SgReturnStmt* statement) {
 
 void CodeSegment::handle_break_statement(SgBreakStmt* statement) {
     is_break = true;
-    while(statement_list.size() > current_ptr + 1) {
-        statement_list.pop_back();
-    }
-}
-
-void CodeSegment::handle_continue_statement(SgContinueStmt* statement) {
-    is_continue = true;
     while(statement_list.size() > current_ptr + 1) {
         statement_list.pop_back();
     }

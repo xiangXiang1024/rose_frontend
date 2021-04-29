@@ -49,7 +49,7 @@ public:
 
 
     void analyze() {
-//        cout << "analyze loop segment" << endl;
+        cout << "analyze loop segment" << endl;
         SgStatement* statement = statement_list.front();
 //        cout << "statement: " << statement -> unparseToString() << "\t|\t" << statement -> class_name() << endl;
         if(dynamic_cast<SgForStatement*>(statement) != nullptr) {
@@ -120,19 +120,58 @@ public:
         general_json.AddEmptySubArray("line_no");
         general_json["line_no"].Add(get_begin_line_no());
         general_json["line_no"].Add(get_end_line_no());
-        general_json.AddEmptySubArray("input");
+        neb::CJsonObject input_json("");
         for(Variable* v : input_list){
-          general_json["input"].Add(v->expression_str);
+          input_json.Add(v->variable_name,v->type->unparseToString());
         }
-        general_json.AddEmptySubArray("output");
+        general_json.Add("input",input_json);
+        neb::CJsonObject output_json("");
         for(Variable* v : output_list){
-          general_json["output"].Add(v->expression_str);
+          output_json.Add(v->variable_name,v->type->unparseToString());
         }
+        general_json.Add("output",output_json);
         general_json.AddEmptySubArray("variables");
+        neb::CJsonObject variables_json("");
+        if(initializer!=nullptr){
+          for(Variable* v : initializer->intermediate_list){
+            if(v->variable_name!=""){
+              variables_json.Add(v->variable_name,v->type->unparseToString());
+            }
+          }
+        }
+        general_json["variables"].Add(variables_json);
         general_json.AddEmptySubArray("initialzie");
+        neb::CJsonObject initialzie_json("");
+        if(initializer!=nullptr){
+          for(Variable* v : initializer->intermediate_list){
+            if(v->variable_name!=""){
+              initialzie_json.Add(v->variable_name,v->expression_str);
+            }
+          }
+        }
+        general_json["initialzie"].Add(initialzie_json);
         general_json.AddEmptySubArray("traces");
-        if(traces.size()!=0){
-          for(CodeSegment* trace : traces){
+        auto ls_1 = loop_segment_list.end()-1;
+        auto ls_0 = loop_segment_list.begin();
+        CodeSegment* segment_1 = *ls_1;
+        CodeSegment* segment_0 = *ls_0;
+        CodeSegment* segment;
+        if(segment_1->statement_list.size()!=0){
+          segment = segment_1;
+        }else{
+          segment = segment_0;
+        }
+        if(segment->traces.size()!=0){
+          if(segment_0->statement_list.size()==0){
+            neb::CJsonObject test_json("");
+            test_json.Add("constraint",segment_0->get_condition_str());
+            test_json.Add("break",segment_0->is_break);
+            test_json.Add("continue",segment_0->is_continue);
+            test_json.AddEmptySubArray("content");
+            test_json["content"].Add(segment_0->get_ir_content());
+            general_json["traces"].Add(test_json);
+          }
+          for(CodeSegment* trace : segment->traces){
               neb::CJsonObject trace_json("");
               trace_json.Add("constraint",trace->get_condition_str());
               trace_json.Add("break",trace->is_break);
@@ -146,7 +185,16 @@ public:
                 }
               }
               general_json["traces"].Add(trace_json);
-            }
+          }
+          if(segment_1->statement_list.size()==0){
+            neb::CJsonObject test_json("");
+            test_json.Add("constraint",segment_1->get_condition_str());
+            test_json.Add("break",segment_1->is_break);
+            test_json.Add("continue",segment_1->is_continue);
+            test_json.AddEmptySubArray("content");
+            test_json["content"].Add(segment_1->get_ir_content());
+            general_json["traces"].Add(test_json);
+          }
         }
         general_json.AddEmptySubArray("irrelevant");
         for(int no : unrelated_lines){

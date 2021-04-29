@@ -18,7 +18,6 @@
       int current_ptr = 0;
       bool is_break = false;
       bool is_continue = false;
-      Code* parent_node = nullptr;
       bool has_array_operation = false;
       bool is_func_call = false;
       string ref_func_name = "";
@@ -138,24 +137,29 @@
           if(is_func_call){
             cout << "is func call path" << endl;
           }
-          cout << "========" << endl;
-
+          /*
           if(segment_list.size() > 0) {
+            cout << "===========================" << endl;
               cout << "segment list: " << endl;
               for(CodeSegment* c : segment_list) {
                   c -> print();
               }
-              return;
-          }/*else {
+              cout << "===========================" << endl;
+          }
+          */
+          /*else {
               cout << "segment_list.size() == 0" << endl;
           }*/
-
+          /*
           if(traces.size() > 0) {
+            cout << "========" << endl;
+            cout << "traces: " << endl;
               for(CodeSegment* c : traces) {
                   c -> print();
               }
+              cout << "========" << endl;
           }
-
+          */
       }
 
       void analyze() {
@@ -182,7 +186,11 @@
               // TODO
               for (auto it = segment_list.end()-1; it >= segment_list.begin(); it--) {
                   CodeSegment* segment = *it;
+                  cout << "before analyze:" <<endl;
+                  segment->print();
                   segment -> analyze();
+                  cout << "after analyze:" <<endl;
+                  segment->print();
                   add_output(segment -> output_list);
                   add_input(segment -> input_list);
                   if(it != segment_list.begin()) {
@@ -194,10 +202,19 @@
               for( ; current_ptr < statement_list.size() ; current_ptr++) {
                   SgStatement* statement = statement_list.at(current_ptr);
                   handle_statement(statement);
+                  if(dynamic_cast<SgIfStmt*>(statement) != nullptr||dynamic_cast<SgBreakStmt*>(statement) != nullptr||dynamic_cast<SgContinueStmt*>(statement) != nullptr||dynamic_cast<SgReturnStmt*>(statement) != nullptr){
+                    break;
+                  }
               }
 
+              cout << traces.size()<<endl;
+
               for(CodeSegment* segment : traces) {
+                  cout << "before analyze:" <<endl;
+                  segment->print();
                   segment -> analyze();
+                  cout << "after analyze:" <<endl;
+                  segment->print();
                   add_output(segment -> output_list);
                   add_input(segment -> input_list);
               }
@@ -250,27 +267,49 @@
 
       void handle_break_statement(SgBreakStmt* statement);
 
-      void handle_continue_statement(SgContinueStmt* statement);
+      void handle_continue_statement(SgContinueStmt* statement){
+        is_continue = true;
+        while(statement_list.size() > current_ptr + 1) {
+          statement_list.pop_back();
+        }
+        //cout << "ffffffffffffffffffffffffff" <<endl;
+        Code* node = parent_node;
+        while(critical_statement==nullptr&&node!=nullptr){
+          critical_statement = node->critical_statement;
+          node = node->parent_node;
+        }
+        if(critical_statement!=nullptr){
+          //cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"<<endl;
+          vector<SgStatement*> critical_statement_list;
+          critical_statement_list.push_back(critical_statement);
+          statement_list.insert(statement_list.begin()+current_ptr,critical_statement_list.begin(),critical_statement_list.end());
+        }
+        //cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"<<endl;
+      };
 
       string get_condition_str();
 
-      neb::CJsonObject get_ir_content() {
+      virtual neb::CJsonObject get_ir_content(){
         neb::CJsonObject general_json("");
         general_json.Add("type",type);
         if(type=="func_call"){
           general_json.Add("function_name",ref_func_name);
         }
-        general_json.AddEmptySubArray("line_no");
-        general_json["line_no"].Add(get_begin_line_no());
-        general_json["line_no"].Add(get_end_line_no());
-        general_json.AddEmptySubArray("input");
+        if(statement_list.size()!=0){
+          general_json.AddEmptySubArray("line_no");
+          general_json["line_no"].Add(get_begin_line_no());
+          general_json["line_no"].Add(get_end_line_no());
+        }
+        neb::CJsonObject input_json("");
         for(Variable* v : input_list){
-          general_json["input"].Add(v->expression_str);
+          input_json.Add(v->variable_name,v->type->unparseToString());
         }
-        general_json.AddEmptySubArray("output");
+        general_json.Add("input",input_json);
+        neb::CJsonObject output_json("");
         for(Variable* v : output_list){
-          general_json["output"].Add(v->expression_str);
+          output_json.Add(v->variable_name,v->type->unparseToString());
         }
+        general_json.Add("output",output_json);
         general_json.AddEmptySubArray("traces");
         if(traces.size()!=0){
           for(CodeSegment* trace : traces){
@@ -288,6 +327,73 @@
               }
               general_json["traces"].Add(trace_json);
             }
+        }else{
+          neb::CJsonObject trace_json("");
+          trace_json.Add("constraint","true");
+          trace_json.Add("break",false);
+          trace_json.Add("continue",false);
+          if(segment_list.size()==0){
+            cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" <<endl;
+            print();
+            cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" <<endl;
+            bool find = false;
+            string double_array = "[";
+            /*
+            if(statement_list.size()!=0){
+              for(SgStatement* statement:statement_list){
+              if(dynamic_cast<SgExprStatement*>(statement) != nullptr) {
+                vector<SgNode*> node_list = statement -> get_traversalSuccessorContainer();
+                for(SgNode* n : node_list) {
+                  if(dynamic_cast<SgAssignOp*>(n)!=nullptr){
+                    SgAssignOp* assign_op = dynamic_cast<SgAssignOp*>(n);
+                  SgNode* var_node = assign_op -> get_traversalSuccessorByIndex(0);
+                  if(dynamic_cast<SgVarRefExp*>(var_node) != nullptr) {
+                  SgVarRefExp* var_ref = dynamic_cast<SgVarRefExp*>(var_node);
+                  Variable* v = new Variable(var_ref);
+                  SgNode* expression_node = assign_op -> get_traversalSuccessorContainer().back();
+                  SgExpression* expression = dynamic_cast<SgExpression*>(expression_node);
+                  double_array.append("[");
+                  double_array.append(v->variable_name);
+                  double_array.append(",");
+                  if(expression!=nullptr){
+                    double_array.append(expression->unparseToString());
+                  }
+                  double_array.append("]");
+                  double_array.append(",");
+                  find = true;
+                  }
+                  }
+
+                }
+              }
+            }
+            if(find){
+              double_array.erase(double_array.end()-1);
+            }
+            }
+            */
+            for(Variable* v : output_list){
+              double_array.append("[");
+              double_array.append(v->variable_name);
+              double_array.append(",");
+              double_array.append(v->expression_str);
+              double_array.append("]");
+              double_array.append(",");
+              find = true;
+            }
+            if(find){
+              double_array.erase(double_array.end()-1);
+            }
+            double_array.append("]");
+            trace_json.Add("content",double_array);
+          }else{
+            trace_json.AddEmptySubArray("content");
+            for(CodeSegment* cs : segment_list){
+              trace_json["content"].Add(cs->get_ir_content());
+            }
+          }
+          general_json["traces"].Add(trace_json);
+
         }
         general_json.AddEmptySubArray("irrelevant");
         for(int no : unrelated_lines){
@@ -311,7 +417,7 @@
           return ir_stream.str();
         */
         return general_json;
-      }
+      };
 
       void calculate_input();
 

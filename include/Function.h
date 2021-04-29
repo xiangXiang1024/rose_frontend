@@ -47,6 +47,7 @@ public:
 
         segment = CodeSegment(statement_list, nullptr, func_name, func_call_map);
         segment.input_list = input_list;
+        segment.intermediate_list = intermediate_list;
         segment.analyze();
 
         generate_output_list();
@@ -62,6 +63,14 @@ public:
             cout << l << "    ";
         }
         cout << endl << endl;*/
+
+        for(CodeSegment* cs : segment.segment_list){
+          cout << endl << "outputs: ";
+        for(Variable* v : cs->output_list) {
+            cout << v->variable_name << "(" << v->type -> unparseToCompleteString() << ")    ";
+        }
+        cout << endl << endl;
+        }
     };
 
     void make_ir_content(neb::CJsonObject& res) {
@@ -84,10 +93,64 @@ public:
               trace_json.Add("constraint",cs->get_condition_str());
               trace_json.Add("break",cs->is_break);
               trace_json.Add("continue",cs->is_continue);
-              trace_json.AddEmptySubArray("content");
               if(cs->segment_list.size()==0){
-                trace_json["content"].Add(cs->get_ir_content());
+                if(cs->type!="loop"){
+                  bool find = false;
+                  string double_array = "[";
+                  /*
+                  if(cs->statement_list.size()!=0){
+                    for(SgStatement* statement:cs->statement_list){
+                    if(dynamic_cast<SgExprStatement*>(statement) != nullptr) {
+                      vector<SgNode*> node_list = statement -> get_traversalSuccessorContainer();
+                      for(SgNode* n : node_list) {
+                        if(dynamic_cast<SgAssignOp*>(n)!=nullptr){
+                          SgAssignOp* assign_op = dynamic_cast<SgAssignOp*>(n);
+                        SgNode* var_node = assign_op -> get_traversalSuccessorByIndex(0);
+                        if(dynamic_cast<SgVarRefExp*>(var_node) != nullptr) {
+                        SgVarRefExp* var_ref = dynamic_cast<SgVarRefExp*>(var_node);
+                        Variable* v = new Variable(var_ref);
+                        SgNode* expression_node = assign_op -> get_traversalSuccessorContainer().back();
+                        SgExpression* expression = dynamic_cast<SgExpression*>(expression_node);
+                        double_array.append("[");
+                        double_array.append(v->variable_name);
+                        double_array.append(",");
+                        if(expression!=nullptr){
+                          double_array.append(expression->unparseToString());
+                        }
+                        double_array.append("]");
+                        double_array.append(",");
+                        find = true;
+                        }
+                        }
+
+                      }
+                    }
+                  }
+                  if(find){
+                    double_array.erase(double_array.end()-1);
+                  }
+                    }
+                    */
+                    for(Variable* v : cs->output_list){
+                      double_array.append("[");
+                      double_array.append(v->variable_name);
+                      double_array.append(",");
+                      double_array.append(v->expression_str);
+                      double_array.append("]");
+                      double_array.append(",");
+                      find = true;
+                    }
+                    if(find){
+                      double_array.erase(double_array.end()-1);
+                    }
+                    double_array.append("]");
+                    trace_json.Add("content",double_array);
+                }else{
+                  trace_json.AddEmptySubArray("content");
+                  trace_json["content"].Add(cs->get_ir_content());
+                }
               }else{
+                trace_json.AddEmptySubArray("content");
                 for(CodeSegment* cs_in_cs : cs->segment_list){
                   trace_json["content"].Add(cs_in_cs->get_ir_content());
                 }
@@ -127,12 +190,66 @@ public:
             trace_json.Add("constraint",segment.get_condition_str());
             trace_json.Add("break",segment.is_break);
             trace_json.Add("continue",segment.is_continue);
-            trace_json.AddEmptySubArray("content");
             if(segment.segment_list.size()==0){
-              trace_json["content"].Add(segment.get_ir_content());
+              if(segment.type!="loop"){
+                bool find = false;
+                  string double_array = "[";
+                  /*
+                  if(segment.statement_list.size()!=0){
+                    for(SgStatement* statement:segment.statement_list){
+                    if(dynamic_cast<SgExprStatement*>(statement) != nullptr) {
+                      vector<SgNode*> node_list = statement -> get_traversalSuccessorContainer();
+                      for(SgNode* n : node_list) {
+                        if(dynamic_cast<SgAssignOp*>(n)!=nullptr){
+                          SgAssignOp* assign_op = dynamic_cast<SgAssignOp*>(n);
+                        SgNode* var_node = assign_op -> get_traversalSuccessorByIndex(0);
+                        if(dynamic_cast<SgVarRefExp*>(var_node) != nullptr) {
+                        SgVarRefExp* var_ref = dynamic_cast<SgVarRefExp*>(var_node);
+                        Variable* v = new Variable(var_ref);
+                        SgNode* expression_node = assign_op -> get_traversalSuccessorContainer().back();
+                        SgExpression* expression = dynamic_cast<SgExpression*>(expression_node);
+                        double_array.append("[");
+                        double_array.append(v->variable_name);
+                        double_array.append(",");
+                        if(expression!=nullptr){
+                          double_array.append(expression->unparseToString());
+                        }
+                        double_array.append("]");
+                        double_array.append(",");
+                        find = true;
+                        }
+                        }
+
+                      }
+                    }
+                  }
+                  if(find){
+                    double_array.erase(double_array.end()-1);
+                  }
+                  }
+                  */
+                  for(Variable* v : segment.output_list){
+                    double_array.append("[");
+                    double_array.append(v->variable_name);
+                    double_array.append(",");
+                    double_array.append(v->expression_str);
+                    double_array.append("]");
+                    double_array.append(",");
+                    find = true;
+                  }
+                  if(find){
+                    double_array.erase(double_array.end()-1);
+                  }
+                  double_array.append("]");
+                  trace_json.Add("content",double_array);
+              }else{
+                trace_json.AddEmptySubArray("content");
+                trace_json["content"].Add(segment.get_ir_content());
+              }
             }else{
+              trace_json.AddEmptySubArray("content");
               for(CodeSegment* cs_in_cs : segment.segment_list){
-                trace_json["content"].Add(cs_in_cs->get_ir_content());
+                  trace_json["content"].Add(cs_in_cs->get_ir_content());
               }
             }
             general_json["traces"].Add(trace_json);
@@ -144,7 +261,7 @@ public:
               trace_json.Add("continue",trace->is_continue);
               trace_json.AddEmptySubArray("content");
               if(trace->segment_list.size()==0){
-                trace_json["content"].Add(trace->get_ir_content());
+                  trace_json["content"].Add(trace->get_ir_content());
               }else{
                 for(CodeSegment* cs_in_trace : trace->segment_list){
                   trace_json["content"].Add(cs_in_trace->get_ir_content());
