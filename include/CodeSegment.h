@@ -193,18 +193,27 @@
                   segment->print();
                   add_output(segment -> output_list);
                   add_input(segment -> input_list);
+                  /*
                   if(it != segment_list.begin()) {
                       CodeSegment* next_segment = *(it-1);
                       next_segment -> add_output(segment -> input_list);
                   }
+                  */
               }
           }else {
+              bool is_continue_statement = false;
               for( ; current_ptr < statement_list.size() ; current_ptr++) {
                   SgStatement* statement = statement_list.at(current_ptr);
                   handle_statement(statement);
                   if(dynamic_cast<SgIfStmt*>(statement) != nullptr||dynamic_cast<SgBreakStmt*>(statement) != nullptr||dynamic_cast<SgContinueStmt*>(statement) != nullptr||dynamic_cast<SgReturnStmt*>(statement) != nullptr){
+                    if(dynamic_cast<SgContinueStmt*>(statement) != nullptr){
+                      is_continue_statement = true;
+                    }
                     break;
                   }
+              }
+              if(is_continue_statement){
+                handle_statement(statement_list.at(current_ptr));
               }
 
               cout << traces.size()<<endl;
@@ -372,7 +381,7 @@
             }
             }
             */
-            for(Variable* v : output_list){
+            for(Variable* v : intermediate_list){
               double_array.append("[");
               double_array.append(v->variable_name);
               double_array.append(",");

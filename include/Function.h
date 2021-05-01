@@ -131,7 +131,7 @@ public:
                   }
                     }
                     */
-                    for(Variable* v : cs->output_list){
+                    for(Variable* v : cs->intermediate_list){
                       double_array.append("[");
                       double_array.append(v->variable_name);
                       double_array.append(",");
@@ -228,7 +228,7 @@ public:
                   }
                   }
                   */
-                  for(Variable* v : segment.output_list){
+                  for(Variable* v : segment.intermediate_list){
                     double_array.append("[");
                     double_array.append(v->variable_name);
                     double_array.append(",");

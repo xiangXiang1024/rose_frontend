@@ -48,8 +48,9 @@ public:
             }
         }
         if(!has_variable) {
-            input_list.push_back(v);
-            intermediate_list.push_back(v);
+            Variable* input_var = new Variable(*v);
+            input_list.push_back(input_var);
+            add_intermediate(input_var);
         }
         /*
         cout << "after add input_list:" << endl;
@@ -100,7 +101,8 @@ public:
                 return;
             }
         }
-        output_list.push_back(v);
+        Variable* output_var = new Variable(*v);
+        output_list.push_back(output_var);
 
         /*if(!has_variable) {
             output_list.push_back(v);
@@ -133,7 +135,8 @@ public:
                 break;
             }
         }
-        intermediate_list.push_back(v);
+        Variable* intermediate_var = new Variable(*v);
+        intermediate_list.push_back(intermediate_var);
 
         /*
         cout << "after add intermediate_list:" << endl;
