@@ -24,6 +24,13 @@ public:
         func_name = function_declaration -> get_name().getString();
     }
 
+    Function(Function* func){
+      func_name = func->func_name;
+      input_list = func->input_list;
+      intermediate_list = func->intermediate_list;
+      func_call_map = func->func_call_map;
+    }
+
     void analyze() {
         cout << "analyze function " << func_name << endl;
 
@@ -155,6 +162,9 @@ public:
                   trace_json["content"].Add(cs_in_cs->get_ir_content());
                 }
               }
+              if(cs->critical_string!=""){
+                trace_json.Add("return",cs->critical_string);
+              }
               general_json["traces"].Add(trace_json);
             }else{
               for(CodeSegment* trace : cs->traces){
@@ -169,6 +179,9 @@ public:
                   for(CodeSegment* cs_in_trace : trace->segment_list){
                     trace_json["content"].Add(cs_in_trace->get_ir_content());
                   }
+                }
+                if(trace->critical_string!=""){
+                  trace_json.Add("return",trace->critical_string);
                 }
                 general_json["traces"].Add(trace_json);
               }
@@ -252,6 +265,9 @@ public:
                   trace_json["content"].Add(cs_in_cs->get_ir_content());
               }
             }
+            if(segment.critical_string!=""){
+              trace_json.Add("return",segment.critical_string);
+            }
             general_json["traces"].Add(trace_json);
           }else{
             for(CodeSegment* trace : segment.traces){
@@ -266,6 +282,9 @@ public:
                 for(CodeSegment* cs_in_trace : trace->segment_list){
                   trace_json["content"].Add(cs_in_trace->get_ir_content());
                 }
+              }
+              if(trace->critical_string!=""){
+                trace_json.Add("return",trace->critical_string);
               }
               general_json["traces"].Add(trace_json);
             }

@@ -99,6 +99,7 @@ bool CodeSegment::partition() {
                 CodeSegment* segment2 = new CodeSegment(statement_list2, condition_list, input_list, output_list, intermediate_list, 0, this, func_name, func_call_map);
                 segment2->is_func_call = true;
                 segment2->ref_func_name = ref_func_declaration->get_name();
+
                 func_call_map->insert(pair<string, string>(func_name,ref_func_declaration->get_name()));
 
                 vector<SgStatement*> statement_list3(statement_list.begin() + current_ptr + 1, statement_list.end());
@@ -333,6 +334,7 @@ void CodeSegment::handle_if_statement(SgIfStmt* statement) {
     //cout << true_segment->current_ptr <<endl;
     true_segment->statement_list.erase(true_segment->statement_list.begin() + current_ptr);
     true_segment->statement_list.insert(true_segment->statement_list.begin() + current_ptr, true_statement_list.begin(), true_statement_list.end());
+    true_segment->current_ptr = 0;
     traces.push_back(true_segment);
 
 //cout << "fffffffffffffffffffffffffffffffffffffff" <<endl;
@@ -353,6 +355,7 @@ void CodeSegment::handle_if_statement(SgIfStmt* statement) {
     }
     Condition false_condition(expr, true);
     false_segment -> add_condition(false_condition);
+    false_segment->current_ptr = 0;
     traces.push_back(false_segment);
 }
 
@@ -385,8 +388,10 @@ void CodeSegment::handle_return_statement(SgReturnStmt* statement) {
 //        output.print();
         add_output(output);
     }else {
+      critical_string = expression -> unparseToString();
+      /*
         for(SgNode* node : expression -> get_traversalSuccessorContainer()) {
-//            cout << "node: " << node -> unparseToString() << "\t|\t" << node -> class_name() << endl;
+            cout << "node: " << node -> unparseToString() << "\t|\t" << node -> class_name() << endl;
             if(node -> class_name() == "SgVarRefExp") {
                 SgVarRefExp* var_ref_exp = dynamic_cast<SgVarRefExp*>(node);
                 string name = var_ref_exp -> get_symbol() -> get_declaration() -> get_name().getString();
@@ -401,6 +406,7 @@ void CodeSegment::handle_return_statement(SgReturnStmt* statement) {
                 add_output(output);
             }
         }
+        */
     }
 
     while(statement_list.size() > current_ptr + 1) {

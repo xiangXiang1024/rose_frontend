@@ -137,7 +137,7 @@
           if(is_func_call){
             cout << "is func call path" << endl;
           }
-          /*
+
           if(segment_list.size() > 0) {
             cout << "===========================" << endl;
               cout << "segment list: " << endl;
@@ -146,11 +146,11 @@
               }
               cout << "===========================" << endl;
           }
-          */
-          /*else {
+
+          else {
               cout << "segment_list.size() == 0" << endl;
-          }*/
-          /*
+          }
+
           if(traces.size() > 0) {
             cout << "========" << endl;
             cout << "traces: " << endl;
@@ -159,7 +159,7 @@
               }
               cout << "========" << endl;
           }
-          */
+
       }
 
       void analyze() {
@@ -186,11 +186,11 @@
               // TODO
               for (auto it = segment_list.end()-1; it >= segment_list.begin(); it--) {
                   CodeSegment* segment = *it;
-                  cout << "before analyze:" <<endl;
-                  segment->print();
+                  //cout << "before analyze:" <<endl;
+                  //segment->print();
                   segment -> analyze();
-                  cout << "after analyze:" <<endl;
-                  segment->print();
+                  //cout << "after analyze:" <<endl;
+                  //segment->print();
                   add_output(segment -> output_list);
                   add_input(segment -> input_list);
                   /*
@@ -202,10 +202,22 @@
               }
           }else {
               bool is_continue_statement = false;
+              bool has_if_statement = false;
+              int origin_current_ptr = current_ptr;
               for( ; current_ptr < statement_list.size() ; current_ptr++) {
+                 SgStatement* statement = statement_list.at(current_ptr);
+                 if(dynamic_cast<SgIfStmt*>(statement) != nullptr){
+                   has_if_statement = true;
+                   handle_statement(statement);
+                   break;
+                 }
+              }
+              current_ptr = origin_current_ptr;
+              if(!has_if_statement){
+                for( ; current_ptr < statement_list.size() ; current_ptr++) {
                   SgStatement* statement = statement_list.at(current_ptr);
                   handle_statement(statement);
-                  if(dynamic_cast<SgIfStmt*>(statement) != nullptr||dynamic_cast<SgBreakStmt*>(statement) != nullptr||dynamic_cast<SgContinueStmt*>(statement) != nullptr||dynamic_cast<SgReturnStmt*>(statement) != nullptr){
+                  if(dynamic_cast<SgBreakStmt*>(statement) != nullptr||dynamic_cast<SgContinueStmt*>(statement) != nullptr||dynamic_cast<SgReturnStmt*>(statement) != nullptr){
                     if(dynamic_cast<SgContinueStmt*>(statement) != nullptr){
                       is_continue_statement = true;
                     }
@@ -215,15 +227,16 @@
               if(is_continue_statement){
                 handle_statement(statement_list.at(current_ptr));
               }
+              }
 
               cout << traces.size()<<endl;
 
               for(CodeSegment* segment : traces) {
-                  cout << "before analyze:" <<endl;
-                  segment->print();
+                  //cout << "before analyze:" <<endl;
+                  //segment->print();
                   segment -> analyze();
-                  cout << "after analyze:" <<endl;
-                  segment->print();
+                  //cout << "after analyze:" <<endl;
+                  //segment->print();
                   add_output(segment -> output_list);
                   add_input(segment -> input_list);
               }
@@ -334,6 +347,9 @@
                   trace_json["content"].Add(cs_in_trace->get_ir_content());
                 }
               }
+              if(trace->critical_string!=""){
+                trace_json.Add("return",trace->critical_string);
+              }
               general_json["traces"].Add(trace_json);
             }
         }else{
@@ -342,9 +358,11 @@
           trace_json.Add("break",false);
           trace_json.Add("continue",false);
           if(segment_list.size()==0){
+/*
             cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" <<endl;
             print();
             cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" <<endl;
+*/
             bool find = false;
             string double_array = "[";
             /*
@@ -400,6 +418,9 @@
             for(CodeSegment* cs : segment_list){
               trace_json["content"].Add(cs->get_ir_content());
             }
+          }
+          if(critical_string!=""){
+            trace_json.Add("return",critical_string);
           }
           general_json["traces"].Add(trace_json);
 

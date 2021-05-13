@@ -21,6 +21,7 @@ public:
     vector<Variable*> intermediate_list;
     vector<int> unrelated_lines;
     SgExprStatement* critical_statement = nullptr;
+    string critical_string = "";
     Code* parent_node = nullptr;
 
     virtual void analyze() {};

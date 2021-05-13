@@ -65,13 +65,34 @@ public:
         }
 */
 
-
+/*
         for(auto* function : function_list){
           cout << "**** func: " << function->func_name << " ****" << endl;
           if(function->is_recursive){
             function->recursion_segment.print();
           }else{
             function->segment.print();
+          }
+        }
+*/
+        for(int i = 0 ; i < function_list.size() ; i++) {
+          Function* function = function_list.at(i);
+          if(function->is_recursive){
+            Function* fun = new Function(function);
+            generate_statement_list(&(function->recursion_segment),fun);
+            cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" <<endl;
+            for(SgStatement* s : fun->statement_list) {
+              cout << s -> unparseToString() << endl;
+            }
+            fun->segment = CodeSegment(fun->statement_list, nullptr, fun->func_name, fun->func_call_map);
+            fun->segment.input_list = fun->input_list;
+            fun->segment.intermediate_list = fun->intermediate_list;
+            fun->segment.analyze();
+            fun->output_list = fun->segment.output_list;
+            fun->line_info = fun->segment.line_info;
+            sort(fun->line_info.begin(),fun->line_info.end());
+            fun->is_recursive = true;
+            function_list[i] = fun;
           }
         }
 
@@ -81,18 +102,58 @@ public:
         // TODO file_name
     }
 
+    void generate_statement_list(CodeSegment* cs,Function* func){
+      if(cs->segment_list.size()==0){
+        for (auto s : cs->statement_list) {
+          func->statement_list.push_back(s);
+        }
+      }else{
+        for(auto cs_in_cs : cs->segment_list){
+          generate_statement_list(cs_in_cs,func);
+        }
+      }
+    }
+
     string get_ir_content() {
 //        neb::CJsonObject program_json("");
 //        program_json.Add("program_name", file_path);
       neb::CJsonObject res("");
       res.Add("file_name",file_path.substr(file_path.find_last_of('/')+1,file_path.size()));
       res.Add("file_path",file_path);
-      res.AddEmptySubArray("sections");
+      res.AddEmptySubArray("functions");
       for(int i = 0 ; i < function_list.size() ; i++) {
-            Function* f = function_list.at(i);
-            f -> make_ir_content(res);
+        Function* f = function_list.at(i);
+        neb::CJsonObject func_json("");
+        if(f->is_recursive){
+          func_json.Add("type","recursive");
+        }else{
+          func_json.Add("type","normal");
+        }
+        func_json.AddEmptySubArray("line_no");
+        func_json["line_no"].Add(f->segment.get_begin_line_no());
+        func_json["line_no"].Add(f->segment.get_end_line_no());
+        func_json.Add("function_name",f->func_name);
+        neb::CJsonObject input_json("");
+        for(Variable* v : f->input_list){
+          input_json.Add(v->variable_name,v->type->unparseToString());
+        }
+        func_json.Add("input",input_json);
+        neb::CJsonObject variables_json("");
+        for(Variable* v : f->intermediate_list){
+          variables_json.Add(v->variable_name,v->type->unparseToString());
+        }
+        func_json.Add("variables",variables_json);
+        neb::CJsonObject output_json("");
+        for(Variable* v : f->output_list){
+          output_json.Add(v->variable_name,v->type->unparseToString());
+        }
+        func_json.Add("output",output_json);
+        func_json.AddEmptySubArray("sections");
+            f -> make_ir_content(func_json);
+            res["functions"].Add(func_json);
         }
         cout << res.ToFormattedString() <<endl;
+        cout << res.ToString() << endl;
         return res.ToFormattedString();
 /*
         stringstream ir_stream;
@@ -141,7 +202,8 @@ public:
     }
 
     void replace(CodeSegment* code_segment, string terminal_name){
-      for(auto c_s : code_segment->segment_list){
+      for(int i=0;i<code_segment->segment_list.size();i++){
+        CodeSegment* c_s = code_segment->segment_list.at(i);
         if(c_s->is_func_call&&c_s->ref_func_name!=terminal_name){
           for(auto func : function_list){
             if(func->func_name==c_s->ref_func_name){
@@ -171,10 +233,10 @@ public:
 
 
               *c_s = *(new CodeSegment(func->segment));
-              for(SgStatement* s:c_s->statement_list){
-                assignment_statement_list.push_back(s);
+              CodeSegment* pre = code_segment->segment_list.at(i-1);
+              for(SgStatement* s:assignment_statement_list){
+                pre->statement_list.push_back(s);
               }
-              c_s->statement_list=assignment_statement_list;
               replace(c_s,terminal_name);
             }
           }
