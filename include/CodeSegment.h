@@ -27,6 +27,14 @@
 
       CodeSegment() {}
 
+      CodeSegment(vector<SgStatement*> &_statement_list,vector<Variable*> &_input_list,vector<Variable*>& _output_list){
+        for(SgStatement* state:_statement_list){
+            cout<<state->unparseToString()<<endl;
+            this->statement_list.push_back(state);
+          }
+ 
+      }
+
       CodeSegment(CodeSegment& c_s){
         this->statement_list = c_s.statement_list;
         for(auto cs : c_s.segment_list){
@@ -312,6 +320,12 @@
       string get_condition_str();
 
       virtual neb::CJsonObject get_ir_content(){
+        //for(SgStatement* statement:statement_list){
+        //  cout<<statement->unparseToString()<<endl;
+        //}
+        //cout<<"-----------------------------------------"<<endl;
+
+
         neb::CJsonObject general_json("");
         general_json.Add("type",type);
         if(type=="func_call"){

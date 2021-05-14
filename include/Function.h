@@ -1,12 +1,13 @@
 //
 // Created by root on 2021/3/9.
 //
+#ifndef FRONTEND_FUNCTION_H
+#define FRONTEND_FUNCTION_H
 
 #include "CodeSegment.h"
 #include "../cjson_lib/CJsonObject.hpp"
+#include "RebuildCode.h"
 
-#ifndef FRONTEND_FUNCTION_H
-#define FRONTEND_FUNCTION_H
 
 using namespace std;
 
@@ -78,9 +79,13 @@ public:
         }
         cout << endl << endl;
         }
+
+        
+
     };
 
     void make_ir_content(neb::CJsonObject& res) {
+      
         /*string blank = common::get_line_start_blank(tab_num);
         stringstream ir_stream;
         ir_stream << blank << "function: " << func_name << " ir content" << endl;

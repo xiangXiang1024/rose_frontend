@@ -9,3 +9,4 @@
 .idea/vcs.xml
 .idea/xiang_data_analyze.iml
 /generate_klee_cpp/build/
+/build/

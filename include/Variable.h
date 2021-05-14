@@ -5,7 +5,7 @@
 #ifndef FRONTEND_VARIABLE_H
 #define FRONTEND_VARIABLE_H
 
-#endif //FRONTEND_VARIABLE_H
+
 
 #include <string>
 #include "rose.h"
@@ -81,3 +81,5 @@ public:
 private:
     SgExpression* expression = nullptr;
 };
+
+#endif //FRONTEND_VARIABLE_H

@@ -1,0 +1,9 @@
+klee使用说明
+使用RebuildCode类，构造函数有两个：
+RebuildCode(CodeSegment s) 
+RebuildCode(vector<SgStatement*> _statement_list,vector<Variable*> _input_list,vector<Variable*> _output_list)
+
+调用RebuildCode.rewrite()函数，函数内：
+1.对相应segment重写为可编译文件segment.cpp，与可执行程序在同一目录下
+2.使用system("./run_klee.sh")生成expression.txt文件，与可执行程序在同一目录下
+3.使用ConstraintReader.read_constraint()读取约束，保存在vector<string> constraint_list；
